@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bo! Escuchate Esto</title>
+    <link rel="stylesheet" href="src/output.css">
+</head>
+<body class="bg-gray-100">
+    <header class="p-4 bg-pink-500 text-white flex justify-between">
+        <div class="text-lg font-bold">Bo! Escuchate Esto</div>
+        <button class="bg-white text-pink-500 px-4 py-2 rounded">Inicio</button>
+    </header>
+
+    <main class="p-4">
+        <div id="app">
+            <h1 class="text-2xl font-bold mb-4">Creador y Buscador de Playlists Musicales</h1>
+            <div class="mb-4">
+                <button id="start-simulator" class="bg-pink-500 text-white px-4 py-2 rounded">Comenzar</button>
+            </div>
+            <div id="simulator" class="hidden">
+                <div id="step-1" class="mb-4">
+                    <label for="num-playlists" class="block text-sm font-medium text-gray-700">¿Cuántas playlists deseas agregar?</label>
+                    <input type="number" id="num-playlists" class="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm" placeholder="Número de playlists">
+                    <button id="next-step-1" class="mt-2 bg-pink-500 text-white px-4 py-2 rounded">Siguiente</button>
+                </div>
+                <div id="step-2" class="hidden mb-4">
+                    <label for="playlist-name" class="block text-sm font-medium text-gray-700">Nombre de la playlist</label>
+                    <input type="text" id="playlist-name" class="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm" placeholder="Nombre de la playlist">
+                    <button id="next-step-2" class="mt-2 bg-pink-500 text-white px-4 py-2 rounded">Siguiente</button>
+                </div>
+                <div id="step-3" class="hidden mb-4">
+                    <label for="playlist-mood" class="block text-sm font-medium text-gray-700">Estado de ánimo de la playlist</label>
+                    <input type="text" id="playlist-mood" class="mt-1 p-2 block w-full border-gray-300 rounded-md shadow-sm" placeholder="Estado de ánimo">
+                    <button id="finish-playlist" class="mt-2 bg-pink-500 text-white px-4 py-2 rounded">Finalizar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-4 bg-pink-500 text-white text-center">
+        &copy; 2024 Bo! Escuchate Esto. Todos los derechos reservados.
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
