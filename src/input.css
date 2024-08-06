@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.bg-pastel-blue {
+    background-color: #aec6cf;
+}
+
+.bg-pastel-pink {
+    background-color: #ffb6c1;
+}
+
+.bg-pastel-yellow {
+    background-color: #fdfd96;
+}
+
+.bg-pastel-blue { background-color: #B3E5FC; }
+
+
+

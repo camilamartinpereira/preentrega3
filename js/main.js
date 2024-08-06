@@ -1,11 +1,11 @@
 class Cancion {
     constructor(nombre, duracion) {
         this.nombre = nombre;
-        this.duracion = Math.round(duracion); // Duración en minutos, redondeada
+        this.duracion = Math.round(duracion);
     }
 
     pluralizarMinutos() {
-        return this.duracion === 1 ? this.duracion + " minuto" : this.duracion + " minutos";
+        return this.duracion === 1 ? `${this.duracion} minuto` : `${this.duracion} minutos`;
     }
 }
 
@@ -17,275 +17,178 @@ class Playlist {
         this.duracionTotal = 0;
     }
 
-    agregarCancion(nombreCancion, duracionCancion) {
-        if (nombreCancion && !isNaN(duracionCancion)) {
-            const nuevaCancion = new Cancion(nombreCancion, duracionCancion);
+    agregarCancion(nombre, duracion) {
+        if (nombre && !isNaN(duracion)) {
+            const nuevaCancion = new Cancion(nombre, duracion);
             this.canciones.push(nuevaCancion);
-            this.duracionTotal += duracionCancion;
-            alert("🎶 Canción agregada con éxito.");
+            this.duracionTotal += duracion;
+            this.actualizarDOM();
+            this.guardarEnStorage();
         } else {
-            alert("🚫 Por favor, ingrese información válida.");
+            this.mostrarMensajeError("🚫 Por favor, ingrese información válida.");
         }
     }
 
     eliminarCancion(index) {
-        if (this.canciones.length > 0 && index >= 0 && index < this.canciones.length) {
+        if (index >= 0 && index < this.canciones.length) {
             const cancionEliminada = this.canciones.splice(index, 1)[0];
             this.duracionTotal -= cancionEliminada.duracion;
-            alert("🎵 Canción eliminada con éxito: " + cancionEliminada.nombre);
-        } else {
-            alert("🔊 No hay canciones en la playlist " + this.nombre + " para eliminar.");
+            this.actualizarDOM();
+            this.guardarEnStorage();
         }
     }
 
-    verCanciones() {
-        if (this.canciones.length > 0) {
-            const listaCanciones = this.canciones.map(cancion => cancion.nombre + ": " + cancion.pluralizarMinutos()).join("\n");
-            alert("🎵 Canciones en la playlist " + this.nombre + ":\n" + listaCanciones);
-        } else {
-            alert("🔊 No hay canciones en la playlist " + this.nombre);
-        }
+    actualizarDOM() {
+        const playlistContainer = document.getElementById(this.nombre);
+        const duracionElement = playlistContainer.querySelector('.playlist-duracion');
+        const listaCanciones = playlistContainer.querySelector('.lista-canciones');
+        duracionElement.textContent = `Duración total: ${this.duracionTotal} minutos`;
+        listaCanciones.innerHTML = this.canciones.map((cancion, index) => 
+            `<li>${cancion.nombre} (${cancion.pluralizarMinutos()})
+                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="eliminarCancion('${this.nombre}', ${index})">Eliminar</button>
+            </li>`
+        ).join('');
+    }
+
+    mostrarMensajeError(mensaje) {
+        const errorContainer = document.getElementById('errorMessages');
+        errorContainer.textContent = mensaje;
+        errorContainer.style.display = 'block';
+        setTimeout(() => errorContainer.style.display = 'none', 3000);
+    }
+
+    guardarEnStorage() {
+        localStorage.setItem('playlists', JSON.stringify(simulador.playlists));
+    }
+
+    static cargarDesdeStorage() {
+        const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+        return playlists.map(pl => {
+            const playlist = new Playlist(pl.nombre, pl.estadoAnimo);
+            playlist.canciones = pl.canciones.map(c => new Cancion(c.nombre, c.duracion));
+            playlist.duracionTotal = pl.duracionTotal;
+            return playlist;
+        });
     }
 }
 
 class SimuladorPlaylists {
-    constructor(nombreUsuario, cantidadPlaylists) {
-        this.nombreUsuario = nombreUsuario;
-        this.playlists = [];
-
-        for (let i = 0; i < cantidadPlaylists; i++) {
-            const nombrePlaylist = prompt("Ingrese el nombre de la playlist " + (i + 1) + ":");
-            let estadoAnimo;
-            do {
-                estadoAnimo = prompt("Para poder darte recomendaciones luego te pedimos que le vincules un estado de ánimo \nEjemplo: Felicidad, Tristeza, Melancolía, Festejo\npara tu playlist " + nombrePlaylist + ":");
-            } while (/^\d+$/.test(estadoAnimo) || estadoAnimo.trim() === "");
-
-            this.playlists.push(new Playlist(nombrePlaylist, estadoAnimo));
+    constructor() {
+        this.playlists = Playlist.cargarDesdeStorage();
+        this.playlists.forEach(playlist => this.agregarPlaylistDOM(playlist));
+        if (this.playlists.length > 0) {
+            this.mostrarFormularioBusqueda(); // Muestra el formulario de búsqueda si ya existen playlists
         }
-
-        this.preguntarEditarPlaylists();
     }
 
-    preguntarEditarPlaylists() {
-        const editarAhora = prompt("🛠️ ¿Deseas editar las playlists ahora? (sí/no)").toLowerCase();
-        if (editarAhora === 'sí' || editarAhora === 'si') {
-            this.editarPlaylists();
+    crearPlaylist(nombre, estadoAnimo) {
+        if (nombre && estadoAnimo) {
+            const nuevaPlaylist = new Playlist(nombre, estadoAnimo);
+            this.playlists.push(nuevaPlaylist);
+            this.agregarPlaylistDOM(nuevaPlaylist);
+            this.mostrarFormularioBusqueda();
+            this.guardarEnStorage();
         } else {
-            this.mostrarMenuPrincipal();
+            this.mostrarMensajeError("🚫 Por favor, ingrese información válida.");
         }
     }
 
-    editarPlaylists() {
-        let index = 0;
-        const totalPlaylists = this.playlists.length;
-        const editarPlaylist = () => {
-            if (index < totalPlaylists) {
-                const playlist = this.playlists[index];
-                alert("🎉 Arranquemos con la playlist: " + playlist.nombre);
-
-                let opcionMenu;
-                do {
-                    opcionMenu = prompt("🌟 Menú de Playlist: " + playlist.nombre + " 🌟\n\n" +
-                        "Duración total: " + playlist.duracionTotal + " minutos\n" +
-                        "Estado de ánimo: " + playlist.estadoAnimo + "\n\n" +
-                        "1️⃣ Agregar canción\n" +
-                        "2️⃣ Quitar canción\n" +
-                        "3️⃣ Ver lista de canciones\n" +
-                        (index < totalPlaylists - 1 ? "4️⃣ Ir a siguiente playlist" : "4️⃣ Volver al menú principal") +
-                        "\n\n0️⃣ Volver al menú principal");
-
-                    switch (opcionMenu) {
-                        case "1":
-                            this.agregarCancion(index);
-                            break;
-                        case "2":
-                            this.eliminarCancion(index);
-                            break;
-                        case "3":
-                            this.playlists[index].verCanciones();
-                            break;
-                        case "4":
-                            if (index < totalPlaylists - 1) {
-                                index++;
-                                editarPlaylist();
-                            } else {
-                                this.mostrarMenuPrincipal();
-                            }
-                            return;
-                        case "0":
-                            this.mostrarMenuPrincipal();
-                            return;
-                        default:
-                            alert("🚫 Opción no válida. Por favor, selecciona una opción válida.");
-                    }
-                } while (opcionMenu !== "4" && opcionMenu !== "0");
-            }
-        };
-
-        editarPlaylist();
+    agregarPlaylistDOM(playlist) {
+        const playlistDiv = document.createElement('div');
+        playlistDiv.className = 'bg-white p-4 rounded-lg shadow-lg flex flex-col';
+        playlistDiv.id = playlist.nombre;
+        playlistDiv.innerHTML = 
+            `<div class="playlist-header mb-3">
+                <span class="text-xl font-bold">${playlist.nombre}</span>
+            </div>
+            <p>Estado de ánimo: ${playlist.estadoAnimo}</p>
+            <p class="playlist-duracion">Duración total: ${playlist.duracionTotal} minutos</p>
+            <div class="canciones-container" style="display:none;">
+                <ul class="lista-canciones mb-3"></ul>
+            </div>
+            <div class="mt-auto">
+                <button class="bg-gray-500 text-white px-2 py-1 rounded" onclick="toggleCanciones('${playlist.nombre}')">Ver Canciones</button>
+                <button class="bg-blue-500 text-white px-2 py-1 rounded mt-2" onclick="toggleAgregarCancion('${playlist.nombre}')">Agregar Canción</button>
+                <form class="agregar-cancion-form space-y-2" style="display:none;" onsubmit="event.preventDefault(); agregarCancion('${playlist.nombre}')">
+                    <div>
+                        <label for="nombreCancion-${playlist.nombre}" class="block text-lg font-semibold mb-2">Nombre de la Canción</label>
+                        <input type="text" id="nombreCancion-${playlist.nombre}" class="border rounded-lg p-2 w-full" placeholder="Nombre de la canción">
+                    </div>
+                    <div>
+                        <label for="duracionCancion-${playlist.nombre}" class="block text-lg font-semibold mb-2">Duración (minutos)</label>
+                        <input type="number" id="duracionCancion-${playlist.nombre}" class="border rounded-lg p-2 w-full" placeholder="Duración en minutos">
+                    </div>
+                    <button type="submit" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Agregar Canción</button>
+                </form>
+            </div>`;
+        document.getElementById('playlistList').appendChild(playlistDiv);
     }
 
-    agregarCancion(index) {
-        const nombreCancion = prompt("Ingrese el nombre de la canción:");
-        let duracionCancion;
-        do {
-            duracionCancion = prompt("Ingrese la duración de la canción (en minutos):");
-        } while (isNaN(duracionCancion) || duracionCancion.trim() === "");
-
-        duracionCancion = parseInt(duracionCancion);
-
-        this.playlists[index].agregarCancion(nombreCancion, duracionCancion);
+    mostrarFormularioBusqueda() {
+        document.getElementById('busquedaFormContainer').style.display = 'block';
     }
 
-    eliminarCancion(index) {
-        const playlist = this.playlists[index];
-        if (playlist.canciones.length > 0) {
-            const listaCanciones = playlist.canciones.map((cancion, index) => (index + 1) + ". " + cancion.nombre + ": " + cancion.pluralizarMinutos()).join("\n");
-            let numeroCancion;
-
-            do {
-                numeroCancion = prompt("Canciones en la playlist " + playlist.nombre + ":\n" + listaCanciones + "\n\nIngrese el número de la canción que desea eliminar (o 0 para volver):");
-                if (numeroCancion === "0") return; // Volver al menú anterior
-            } while (isNaN(numeroCancion) || numeroCancion < 1 || numeroCancion > playlist.canciones.length);
-
-            numeroCancion = parseInt(numeroCancion);
-
-            playlist.eliminarCancion(numeroCancion - 1);
-        } else {
-            alert("🔊 No hay canciones en la playlist " + playlist.nombre + " para eliminar.");
-        }
+    mostrarMensajeError(mensaje) {
+        const errorContainer = document.getElementById('errorMessages');
+        errorContainer.textContent = mensaje;
+        errorContainer.style.display = 'block';
+        setTimeout(() => errorContainer.style.display = 'none', 3000);
     }
 
-    mostrarMenuPrincipal() {
-        let opcionMenu;
-        do {
-            opcionMenu = prompt("¡Hola " + this.nombreUsuario + "! 🌟 Menú Principal 🌟\n\n" +
-                this.playlists.map((playlist, index) => (index + 1) + "️⃣ " + playlist.nombre).join("\n") +
-                "\n\nElige una opción del 1 al " + this.playlists.length + " para gestionar una playlist, " + 
-                (this.playlists.length + 1) + " para buscar playlists, " + 
-                (this.playlists.length + 2) + " para agregar una nueva playlist o " + 
-                (this.playlists.length + 3) + " para salir.");
-
-            const opcionNum = parseInt(opcionMenu);
-            if (opcionNum > 0 && opcionNum <= this.playlists.length) {
-                this.mostrarMenuPlaylist(opcionNum - 1);
-            } else if (opcionNum === this.playlists.length + 1) {
-                this.buscarPlaylists();
-            } else if (opcionNum === this.playlists.length + 2) {
-                this.agregarNuevaPlaylist();
-            } else if (opcionNum === this.playlists.length + 3) {
-                alert("Gracias por usar el simulador de playlists musicales. ¡Hasta luego!");
-            } else {
-                alert("🚫 Opción no válida. Por favor, selecciona una opción válida.");
-            }
-        } while (opcionMenu !== (this.playlists.length + 3).toString());
-    }
-
-    mostrarMenuPlaylist(index) {
-        let opcionMenu;
-        const playlist = this.playlists[index];
-        do {
-            opcionMenu = prompt("🌟 Menú de Playlist: " + playlist.nombre + " 🌟\n\n" +
-                "Duración total: " + playlist.duracionTotal + " minutos\n" +
-                "Estado de ánimo: " + playlist.estadoAnimo + "\n\n" +
-                "1️⃣ Agregar canción\n" +
-                "2️⃣ Quitar canción\n" +
-                "3️⃣ Ver lista de canciones\n" +
-                "4️⃣ Volver al menú principal");
-
-            switch (opcionMenu) {
-                case "1":
-                    this.agregarCancion(index);
-                    break;
-                case "2":
-                    this.eliminarCancion(index);
-                    break;
-                case "3":
-                    playlist.verCanciones();
-                    break;
-                case "4":
-                    return;
-                default:
-                    alert("🚫 Opción no válida. Por favor, selecciona una opción válida.");
-            }
-        } while (opcionMenu !== "4");
-    }
-
-    buscarPlaylists() {
-        let opcionMenu;
-        do {
-            opcionMenu = prompt("🔍 Buscar Playlists 🔍\n\n" +
-                "1️⃣ Buscar por estado de ánimo\n" +
-                "2️⃣ Buscar por duración\n" +
-                "3️⃣ Volver al menú principal");
-
-            switch (opcionMenu) {
-                case "1":
-                    this.buscarPorEstadoAnimo();
-                    break;
-                case "2":
-                    this.buscarPorDuracion();
-                    break;
-                case "3":
-                    return;
-                default:
-                    alert("🚫 Opción no válida. Por favor, selecciona una opción válida.");
-            }
-        } while (opcionMenu !== "3");
-    }
-
-    buscarPorEstadoAnimo() {
-        const estadoAnimo = prompt("Ingrese el estado de ánimo para buscar playlists:");
-        const playlistsEncontradas = this.playlists.filter(playlist => playlist.estadoAnimo.toLowerCase() === estadoAnimo.toLowerCase());
-
-        if (playlistsEncontradas.length > 0) {
-            const listaPlaylists = playlistsEncontradas.map(playlist => playlist.nombre + " (" + playlist.duracionTotal + " minutos)").join("\n");
-            alert("🔍 Playlists encontradas:\n" + listaPlaylists);
-        } else {
-            alert("🚫 No se encontraron playlists con el estado de ánimo: " + estadoAnimo);
-        }
-    }
-
-    buscarPorDuracion() {
-        const duracionMinima = parseInt(prompt("Ingrese la duración mínima en minutos:"));
-        const duracionMaxima = parseInt(prompt("Ingrese la duración máxima en minutos:"));
-
-        const playlistsEncontradas = this.playlists.filter(playlist => playlist.duracionTotal >= duracionMinima && playlist.duracionTotal <= duracionMaxima);
-
-        if (playlistsEncontradas.length > 0) {
-            const listaPlaylists = playlistsEncontradas.map(playlist => playlist.nombre + " (" + playlist.duracionTotal + " minutos)").join("\n");
-            alert("🔍 Playlists encontradas:\n" + listaPlaylists);
-        } else {
-            alert("🚫 No se encontraron playlists en el rango de duración: " + duracionMinima + " - " + duracionMaxima + " minutos.");
-        }
-    }
-
-    agregarNuevaPlaylist() {
-        const nombrePlaylist = prompt("Ingrese el nombre de la nueva playlist:");
-        let estadoAnimo;
-        do {
-            estadoAnimo = prompt("Para poder darte recomendaciones luego te pedimos que le vincules un estado de ánimo \nEjemplo: Felicidad, Tristeza, Melancolía, Festejo\npara tu nueva playlist " + nombrePlaylist + ":");
-        } while (/^\d+$/.test(estadoAnimo) || estadoAnimo.trim() === "");
-
-        this.playlists.push(new Playlist(nombrePlaylist, estadoAnimo));
-        alert("✅ Playlist agregada con éxito.");
+    guardarEnStorage() {
+        localStorage.setItem('playlists', JSON.stringify(this.playlists));
     }
 }
 
-document.getElementById("startButton").addEventListener("click", () => {
-    let nombreUsuario;
-    do {
-        nombreUsuario = prompt("Bienvenido al simulador de playlists musicales 🎵\nPor favor, ingresa tu nombre:");
-    } while (!nombreUsuario || !isNaN(nombreUsuario));
+const simulador = new SimuladorPlaylists();
 
-    let cantidadPlaylists;
-    do {
-        cantidadPlaylists = prompt("¿Cuántas playlists deseas crear?");
-        cantidadPlaylists = parseInt(cantidadPlaylists);
-        if (isNaN(cantidadPlaylists) || cantidadPlaylists <= 0) {
-            alert("🚫 Por favor, ingrese un número válido.");
-        }
-    } while (isNaN(cantidadPlaylists) || cantidadPlaylists <= 0);
+document.getElementById('comenzarButton').addEventListener('click', () => {
+    document.getElementById('playlistFormContainer').style.display = 'block';
+    document.getElementById('comenzarButton').style.display = 'none';
+});
 
-    new SimuladorPlaylists(nombreUsuario, cantidadPlaylists);
+document.getElementById('playlistForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const nombre = document.getElementById('playlistName').value;
+    const estadoAnimo = document.getElementById('playlistMood').value;
+    simulador.crearPlaylist(nombre, estadoAnimo);
+    this.reset();
+});
+
+function agregarCancion(nombrePlaylist) {
+    const nombreCancion = document.getElementById(`nombreCancion-${nombrePlaylist}`).value;
+    const duracionCancion = parseFloat(document.getElementById(`duracionCancion-${nombrePlaylist}`).value);
+    const playlist = simulador.playlists.find(pl => pl.nombre === nombrePlaylist);
+    playlist.agregarCancion(nombreCancion, duracionCancion);
+}
+
+function eliminarCancion(nombrePlaylist, index) {
+    const playlist = simulador.playlists.find(pl => pl.nombre === nombrePlaylist);
+    playlist.eliminarCancion(index);
+}
+
+function toggleCanciones(nombrePlaylist) {
+    const container = document.querySelector(`#${nombrePlaylist} .canciones-container`);
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleAgregarCancion(nombrePlaylist) {
+    const form = document.querySelector(`#${nombrePlaylist} .agregar-cancion-form`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+document.getElementById('buscarButton').addEventListener('click', () => {
+    const criterio = document.getElementById('criterioBusqueda').value;
+    const textoBusqueda = document.getElementById('buscarTexto').value.toLowerCase();
+    const resultados = simulador.playlists.filter(pl => 
+        (criterio === 'estadoAnimo' && pl.estadoAnimo.toLowerCase().includes(textoBusqueda)) ||
+        (criterio === 'duracion' && pl.duracionTotal.toString().includes(textoBusqueda))
+    );
+    document.getElementById('resultadosBusqueda').innerHTML = resultados.length > 0
+        ? resultados.map(pl => `<div class="bg-white p-4 rounded-lg shadow-md mb-4">
+                                    <h3 class="text-xl font-bold">${pl.nombre}</h3>
+                                    <p>Estado de ánimo: ${pl.estadoAnimo}</p>
+                                    <p>Duración total: ${pl.duracionTotal} minutos</p>
+                                  </div>`).join('')
+        : '<p class="text-gray-600">No se encontraron resultados.</p>';
 });
