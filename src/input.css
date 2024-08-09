@@ -2,17 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-
+/* Custom styles for pastel backgrounds */
 .bg-pastel-blue {
-    background-color: #aec6cf;
+    background-color: #B3E5FC;
 }
 
 .bg-pastel-pink {
-    background-color: #ffb6c1;
+    background-color: #FFB6C1;
 }
 
 .bg-pastel-yellow {
-    background-color: #fdfd96;
+    background-color: #FDFD96;
 }
 
-.bg-pastel-blue { background-color: #B3E5FC; }
+.bg-pastel-blue:hover, .bg-pastel-pink:hover, .bg-pastel-yellow:hover {
+    filter: brightness(1.1);
+}
