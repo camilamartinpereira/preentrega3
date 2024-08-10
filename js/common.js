@@ -15,7 +15,7 @@ class SimuladorPlaylists {
     }
 
     buscarPlaylists(criterio, texto) {
-        return this.playlists.find(pl => pl[criterio].toLowerCase() === texto.toLowerCase());
+        return this.playlists.filter(pl => pl[criterio].toLowerCase().includes(texto.toLowerCase()));
     }
 
     guardarEnStorage() {

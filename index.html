@@ -18,7 +18,7 @@
                 <div id="searchDropdown" class="absolute bg-white shadow-lg rounded mt-2 p-4 w-64 hidden">
                     <select id="criterioBusquedaHeader" class="border rounded-lg p-2 w-full mb-2">
                         <option value="nombre">Nombre</option>
-                        <option value="estadoAnimo">Estado de Ánimo</option>
+                        <option value="genero">Género</option>
                     </select>
                     <input type="text" id="buscarTextoHeader" class="border rounded-lg p-2 w-full mb-2" placeholder="Buscar...">
                     <button id="buscarButtonHeader" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow w-full">Buscar Playlist</button>
@@ -37,23 +37,26 @@
             </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow-lg mx-auto w-[90%] mb-8" id="playlistFormContainer" style="display:none;">
-            <div class="text-xl font-bold mb-4">
-                Crear Nueva Playlist
+            <div id="step1" class="text-xl font-bold mb-4">
+                ¿Qué nombre le deseas poner a la playlist?
             </div>
-            <div>
-                <form id="playlistForm" class="space-y-4">
-                    <div>
-                        <label for="playlistName" class="block text-lg font-semibold mb-2">Nombre de la Playlist</label>
-                        <input type="text" id="playlistName" class="border rounded-lg p-2 w-full mb-4" placeholder="Nombre de la playlist">
-                    </div>
-                    <div>
-                        <label for="playlistMood" class="block text-lg font-semibold mb-2">Estado de Ánimo</label>
-                        <input type="text" id="playlistMood" class="border rounded-lg p-2 w-full mb-4" placeholder="Estado de ánimo">
-                    </div>
-                    <button type="submit" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Agregar Playlist</button>
-                </form>
+            <div id="step2" class="hidden">
+                <p class="text-xl font-bold mb-4">¿Qué género identificas con esta playlist?</p>
             </div>
-            <div id="successMessage" class="text-green-500 font-semibold mt-4" style="display:none;">Playlist creada con éxito!</div>
+            <div id="step3" class="hidden">
+                <p class="text-xl font-bold mb-4">Playlist creada con éxito</p>
+                <button id="createAnotherButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Crear otra playlist</button>
+                <button id="editPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Editar playlist</button>
+            </div>
+            <form id="playlistForm" class="space-y-4">
+                <div id="formName" class="block">
+                    <input type="text" id="playlistName" class="border rounded-lg p-2 w-full mb-4" placeholder="Nombre de la playlist">
+                </div>
+                <div id="formGenre" class="hidden">
+                    <input type="text" id="playlistGenre" class="border rounded-lg p-2 w-full mb-4" placeholder="Género">
+                </div>
+                <button type="submit" id="submitButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Continuar</button>
+            </form>
         </div>
     </div>
 
@@ -67,6 +70,10 @@
             <button id="viewPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Ver Playlist</button>
         </div>
     </div>
+
+    <footer class="bg-white p-4 text-center text-gray-600">
+        @boescuchateesto
+    </footer>
 
     <script src="js/common.js"></script>
     <script src="js/main.js"></script>
