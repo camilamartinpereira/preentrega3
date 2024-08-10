@@ -11,6 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitButton = document.getElementById("submitButton");
     const createAnotherButton = document.getElementById("createAnotherButton");
     const editPlaylistButton = document.getElementById("editPlaylistButton");
+    const buscarButtonHeader = document.getElementById("buscarButtonHeader");
+    const searchResultText = document.getElementById("searchResultText");
+    const searchModal = document.getElementById("searchModal");
+    const closeModalButton = document.getElementById("closeModalButton");
+    const criterioBusquedaHeader = document.getElementById("criterioBusquedaHeader");
+    const buscarTextoHeader = document.getElementById("buscarTextoHeader");
+    const searchResultButtonsContainer = document.getElementById("searchResultButtonsContainer");
 
     comenzarButton.addEventListener("click", () => {
         playlistFormContainer.style.display = "block";
@@ -52,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         step1.style.display = "block";
         step2.style.display = "none";
         step3.style.display = "none";
+        formName.style.display =
         formName.style.display = "block";
         formGenre.style.display = "none";
         comenzarButton.style.display = "none";
@@ -61,5 +69,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     editPlaylistButton.addEventListener("click", () => {
         window.location.href = "pages/playlists.html";
+    });
+
+    buscarButtonHeader.addEventListener("click", () => {
+        const criterio = criterioBusquedaHeader.value;
+        const textoBusqueda = buscarTextoHeader.value.trim();
+
+        if (textoBusqueda) {
+            const resultados = simulador.buscarPlaylists(criterio, textoBusqueda);
+            if (resultados.length > 0) {
+                searchResultText.innerHTML = resultados.map(playlist => `
+                    <div>
+                        <div><strong>Nombre:</strong> ${playlist.nombre}</div>
+                        <div><strong>Género:</strong> ${playlist.genero}</div>
+                        <button class="bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow mb-2 verCancionesButton">Ver Canciones</button>
+                    </div>
+                `).join("");
+                searchResultButtonsContainer.innerHTML = '<button id="closeSearchModalButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 w-full">Cerrar</button>';
+                searchModal.style.display = "flex";
+
+                document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
+                    });
+                });
+
+                document.getElementById('closeSearchModalButton').addEventListener('click', () => {
+                    searchModal.style.display = "none";
+                });
+            } else {
+                alert("No se encontraron playlists con ese criterio.");
+            }
+        } else {
+            alert("Por favor, introduzca un texto para buscar.");
+        }
+    });
+
+    closeModalButton.addEventListener("click", () => {
+        searchModal.style.display = "none";
     });
 });

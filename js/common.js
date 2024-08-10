@@ -1,3 +1,4 @@
+
 class SimuladorPlaylists {
     constructor() {
         this.playlists = this.cargarDesdeStorage();

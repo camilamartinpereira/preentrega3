@@ -3,6 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const playlistList = document.getElementById("playlistList");
 
     function mostrarPlaylists() {
+        if (!playlistList) {
+            console.error("Elemento con ID 'playlistList' no encontrado.");
+            return;
+        }
+
         playlistList.innerHTML = "";
         simulador.playlists.forEach((playlist, index) => {
             const playlistItem = document.createElement("div");
@@ -24,9 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
             agregarCancionBtn.addEventListener("click", () => {
                 const nombreCancion = prompt("Ingrese el nombre de la canción:");
                 const duracionCancion = prompt("Ingrese la duración de la canción (en minutos):");
-                playlist.agregarCancion(nombreCancion, duracionCancion);
-                simulador.guardarEnStorage();
-                mostrarPlaylists();
+                if (nombreCancion && !isNaN(duracionCancion)) {
+                    playlist.agregarCancion(nombreCancion, duracionCancion);
+                    simulador.guardarEnStorage();
+                    mostrarPlaylists();
+                } else {
+                    alert("Por favor, ingrese un nombre válido y una duración numérica para la canción.");
+                }
             });
 
             const verCancionesBtn = document.createElement("button");
@@ -40,9 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
             eliminarPlaylistBtn.className = "bg-red-500 text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-red-700";
             eliminarPlaylistBtn.textContent = "Eliminar Playlist";
             eliminarPlaylistBtn.addEventListener("click", () => {
-                simulador.playlists.splice(index, 1);
-                simulador.guardarEnStorage();
-                mostrarPlaylists();
+                if (confirm(`¿Estás seguro de que deseas eliminar la playlist "${playlist.nombre}"?`)) {
+                    simulador.playlists.splice(index, 1);
+                    simulador.guardarEnStorage();
+                    mostrarPlaylists();
+                }
             });
 
             buttonsContainer.appendChild(agregarCancionBtn);

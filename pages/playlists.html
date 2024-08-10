@@ -11,19 +11,19 @@
     <header class="bg-white p-4 shadow-md flex justify-between items-center">
         <div class="text-2xl font-bold">Bo! Escuchate Esto</div>
         <nav class="flex">
-            <a href="../index.html" class="text-lg font-semibold text-gray-600 hover:text-gray-800">Inicio</a>
-            <a href="playlists.html" class="text-lg font-semibold text-gray-600 ml-4 hover:text-gray-800">Mis Playlists</a>
-            <div class="relative ml-4">
+            <div class="relative">
                 <button class="text-lg font-semibold text-gray-600 hover:text-gray-800" onclick="toggleSearchDropdown()">Buscar Playlists</button>
                 <div id="searchDropdown" class="absolute bg-white shadow-lg rounded mt-2 p-4 w-64 hidden">
                     <select id="criterioBusquedaHeader" class="border rounded-lg p-2 w-full mb-2">
                         <option value="nombre">Nombre</option>
-                        <option value="estadoAnimo">Estado de Ánimo</option>
+                        <option value="genero">Género</option>
                     </select>
                     <input type="text" id="buscarTextoHeader" class="border rounded-lg p-2 w-full mb-2" placeholder="Buscar...">
                     <button id="buscarButtonHeader" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow w-full">Buscar Playlist</button>
                 </div>
             </div>
+            <a href="../index.html" class="text-lg font-semibold text-gray-600 ml-4 hover:text-gray-800">Inicio</a>
+            <a href="playlists.html" class="text-lg font-semibold text-gray-600 ml-4 hover:text-gray-800">Mis Playlists</a>
         </nav>
     </header>
     <div class="container mx-auto p-4">
@@ -42,10 +42,11 @@
                 <button id="closeModalButton" class="text-red-500 font-bold focus:outline-none">X</button>
             </div>
             <div class="text-lg mb-4" id="searchResultText"></div>
-            <button id="viewPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Ver Playlist</button>
+            <div id="searchResultButtonsContainer"></div>
+            <button id="viewPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow hidden">Ver Playlist</button>
         </div>
     </div>
-
+    <script src="../js/main.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/playlists.js"></script>
     <script>
@@ -56,4 +57,3 @@
     </script>
 </body>
 </html>
-
