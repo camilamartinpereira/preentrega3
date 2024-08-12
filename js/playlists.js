@@ -25,41 +25,59 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const agregarCancionBtn = document.createElement("button");
             agregarCancionBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
-            agregarCancionBtn.textContent = "Agregar Canción";
+            agregarCancionBtn.innerText = "Agregar Canción";
             agregarCancionBtn.addEventListener("click", () => {
-                const nombreCancion = prompt("Ingrese el nombre de la canción:");
-                const duracionCancion = prompt("Ingrese la duración de la canción (en minutos):");
-                if (nombreCancion && !isNaN(duracionCancion)) {
-                    playlist.agregarCancion(nombreCancion, duracionCancion);
-                    simulador.guardarEnStorage();
-                    mostrarPlaylists();
-                } else {
-                    alert("Por favor, ingrese un nombre válido y una duración numérica para la canción.");
-                }
-            });
-
-            const verCancionesBtn = document.createElement("button");
-            verCancionesBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
-            verCancionesBtn.textContent = "Ver Canciones";
-            verCancionesBtn.addEventListener("click", () => {
-                alert(`Canciones en ${playlist.nombre}:\n${playlist.canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
+                Swal.fire({
+                    title: 'Agregar Canción',
+                    html: `
+                        <input type="text" id="nombreCancion" class="swal2-input" placeholder="Nombre de la Canción">
+                        <input type="number" id="duracionCancion" class="swal2-input" placeholder="Duración en minutos">
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Agregar',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        const nombre = Swal.getPopup().querySelector('#nombreCancion').value;
+                        const duracion = Swal.getPopup().querySelector('#duracionCancion').value;
+                        if (!nombre || !duracion) {
+                            Swal.showValidationMessage('Por favor ingrese nombre y duración');
+                        }
+                        return { nombre, duracion };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        playlist.agregarCancion(result.value.nombre, result.value.duracion);
+                        simulador.guardarEnStorage();
+                        mostrarPlaylists();
+                    }
+                });
             });
 
             const eliminarPlaylistBtn = document.createElement("button");
             eliminarPlaylistBtn.className = "bg-red-500 text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-red-700";
-            eliminarPlaylistBtn.textContent = "Eliminar Playlist";
+            eliminarPlaylistBtn.innerText = "Eliminar Playlist";
             eliminarPlaylistBtn.addEventListener("click", () => {
-                if (confirm(`¿Estás seguro de que deseas eliminar la playlist "${playlist.nombre}"?`)) {
-                    simulador.playlists.splice(index, 1);
-                    simulador.guardarEnStorage();
-                    mostrarPlaylists();
-                }
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "Esta acción eliminará la playlist y no se podrá deshacer.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        simulador.eliminarPlaylist(playlist.nombre);
+                        simulador.guardarEnStorage();
+                        mostrarPlaylists();
+                        Swal.fire('Eliminado', 'La playlist ha sido eliminada.', 'success');
+                    }
+                });
             });
 
             buttonsContainer.appendChild(agregarCancionBtn);
-            buttonsContainer.appendChild(verCancionesBtn);
             buttonsContainer.appendChild(eliminarPlaylistBtn);
-
             playlistItem.appendChild(playlistInfo);
             playlistItem.appendChild(buttonsContainer);
             playlistList.appendChild(playlistItem);

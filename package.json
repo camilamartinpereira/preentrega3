@@ -1,13 +1,12 @@
 {
   "devDependencies": {
     "tailwindcss": "^3.4.7"
-  }
-  ,
+  },
   "scripts": {
     "build:css": "tailwindcss build src/input.css -o src/output.css"
   },
   "dependencies": {
+    "sweetalert2": "^11.12.4",
     "tailwindcss": "^2.0.0"
   }
 }
- 
