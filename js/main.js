@@ -1,73 +1,75 @@
 document.addEventListener("DOMContentLoaded", () => {
     const simulador = new SimuladorPlaylists();
     const comenzarButton = document.getElementById("comenzarButton");
+    const playlistFormContainer = document.getElementById("playlistFormContainer");
+    const playlistForm = document.getElementById("playlistForm");
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const step3 = document.getElementById("step3");
+    const formName = document.getElementById("formName");
+    const formGenre = document.getElementById("formGenre");
+    const submitButton = document.getElementById("submitButton");
+    const createAnotherButton = document.getElementById("createAnotherButton");
+    const editPlaylistButton = document.getElementById("editPlaylistButton");
     const buscarButtonHeader = document.getElementById("buscarButtonHeader");
+    const searchResultText = document.getElementById("searchResultText");
     const searchModal = document.getElementById("searchModal");
+    const closeModalButton = document.getElementById("closeModalButton");
     const criterioBusquedaHeader = document.getElementById("criterioBusquedaHeader");
     const buscarTextoHeader = document.getElementById("buscarTextoHeader");
-    const searchResultText = document.getElementById("searchResultText");
     const searchResultButtonsContainer = document.getElementById("searchResultButtonsContainer");
-    const closeModalButton = document.getElementById("closeModalButton");
 
     comenzarButton.addEventListener("click", () => {
-        crearPlaylist();
+        playlistFormContainer.style.display = "block";
+        comenzarButton.style.display = "none";
     });
 
-    async function crearPlaylist() {
-        const { value: nombre } = await Swal.fire({
-            title: 'Crear Playlist',
-            input: 'text',
-            inputLabel: 'Nombre de la Playlist',
-            inputPlaceholder: 'Ingrese el nombre de la playlist',
-            showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Por favor ingrese un nombre!';
-                }
-            }
-        });
+    submitButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        const playlistName = document.getElementById("playlistName").value;
+        const playlistGenre = document.getElementById("playlistGenre").value;
 
-        if (nombre) {
-            const { value: genero } = await Swal.fire({
-                title: 'Seleccionar Género',
-                input: 'select',
-                inputOptions: {
-                    pop: 'Pop',
-                    rock: 'Rock',
-                    jazz: 'Jazz',
-                    classical: 'Clásica',
-                    other: 'Otro'
-                },
-                inputPlaceholder: 'Seleccione un género',
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Por favor seleccione un género!';
-                    }
-                }
-            });
-
-            if (genero) {
-                simulador.crearPlaylist(nombre, genero);
-                await Swal.fire({
-                    title: 'Playlist Creada',
-                    text: 'La playlist ha sido creada exitosamente.',
-                    icon: 'success',
-                    showCancelButton: true,
-                    confirmButtonText: 'Crear Otra',
-                    cancelButtonText: 'Editar Playlist',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonColor: '#3085d6'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        crearPlaylist();
-                    } else {
-                        window.location.href = "pages/playlists.html";
-                    }
-                });
+        if (step1.style.display !== "none") {
+            if (!playlistName) {
+                alert("🚫 Por favor, ingrese un nombre para la playlist.");
+                return;
             }
+            step1.style.display = "none";
+            step2.style.display = "block";
+            formName.style.display = "none";
+            formGenre.style.display = "block";
+            submitButton.innerText = "Continuar";
+        } else if (step2.style.display !== "none") {
+            if (!playlistGenre) {
+                alert("🚫 Por favor, ingrese el género para la playlist.");
+                return;
+            }
+            simulador.crearPlaylist(playlistName, playlistGenre);
+            playlistForm.reset();
+            step2.style.display = "none";
+            step3.style.display = "block";
+            formName.style.display = "none";
+            formGenre.style.display = "none";
+            submitButton.style.display = "none";
         }
-    }
+    });
+
+    createAnotherButton.addEventListener("click", () => {
+        playlistFormContainer.style.display = "block";
+        step1.style.display = "block";
+        step2.style.display = "none";
+        step3.style.display = "none";
+        formName.style.display =
+        formName.style.display = "block";
+        formGenre.style.display = "none";
+        comenzarButton.style.display = "none";
+        submitButton.style.display = "block";
+        submitButton.innerText = "Continuar";
+    });
+
+    editPlaylistButton.addEventListener("click", () => {
+        window.location.href = "pages/playlists.html";
+    });
 
     buscarButtonHeader.addEventListener("click", () => {
         const criterio = criterioBusquedaHeader.value;
@@ -88,8 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
                     button.addEventListener('click', () => {
-                        const canciones = resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n');
-                        Swal.fire('Canciones', `Canciones en ${resultados[index].nombre}:\n${canciones}`, 'info');
+                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
                     });
                 });
 
@@ -97,10 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     searchModal.style.display = "none";
                 });
             } else {
-                Swal.fire('Sin resultados', 'No se encontraron playlists con ese criterio.', 'info');
+                alert("No se encontraron playlists con ese criterio.");
             }
         } else {
-            Swal.fire('Error', 'Por favor, introduzca un texto para buscar.', 'error');
+            alert("Por favor, introduzca un texto para buscar.");
         }
     });
 
@@ -108,4 +109,3 @@ document.addEventListener("DOMContentLoaded", () => {
         searchModal.style.display = "none";
     });
 });
-

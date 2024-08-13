@@ -25,59 +25,41 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const agregarCancionBtn = document.createElement("button");
             agregarCancionBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
-            agregarCancionBtn.innerText = "Agregar Canción";
+            agregarCancionBtn.textContent = "Agregar Canción";
             agregarCancionBtn.addEventListener("click", () => {
-                Swal.fire({
-                    title: 'Agregar Canción',
-                    html: `
-                        <input type="text" id="nombreCancion" class="swal2-input" placeholder="Nombre de la Canción">
-                        <input type="number" id="duracionCancion" class="swal2-input" placeholder="Duración en minutos">
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Agregar',
-                    cancelButtonText: 'Cancelar',
-                    preConfirm: () => {
-                        const nombre = Swal.getPopup().querySelector('#nombreCancion').value;
-                        const duracion = Swal.getPopup().querySelector('#duracionCancion').value;
-                        if (!nombre || !duracion) {
-                            Swal.showValidationMessage('Por favor ingrese nombre y duración');
-                        }
-                        return { nombre, duracion };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        playlist.agregarCancion(result.value.nombre, result.value.duracion);
-                        simulador.guardarEnStorage();
-                        mostrarPlaylists();
-                    }
-                });
+                const nombreCancion = prompt("Ingrese el nombre de la canción:");
+                const duracionCancion = prompt("Ingrese la duración de la canción (en minutos):");
+                if (nombreCancion && !isNaN(duracionCancion)) {
+                    playlist.agregarCancion(nombreCancion, duracionCancion);
+                    simulador.guardarEnStorage();
+                    mostrarPlaylists();
+                } else {
+                    alert("Por favor, ingrese un nombre válido y una duración numérica para la canción.");
+                }
+            });
+
+            const verCancionesBtn = document.createElement("button");
+            verCancionesBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
+            verCancionesBtn.textContent = "Ver Canciones";
+            verCancionesBtn.addEventListener("click", () => {
+                alert(`Canciones en ${playlist.nombre}:\n${playlist.canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
             });
 
             const eliminarPlaylistBtn = document.createElement("button");
             eliminarPlaylistBtn.className = "bg-red-500 text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-red-700";
-            eliminarPlaylistBtn.innerText = "Eliminar Playlist";
+            eliminarPlaylistBtn.textContent = "Eliminar Playlist";
             eliminarPlaylistBtn.addEventListener("click", () => {
-                Swal.fire({
-                    title: '¿Está seguro?',
-                    text: "Esta acción eliminará la playlist y no se podrá deshacer.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        simulador.eliminarPlaylist(playlist.nombre);
-                        simulador.guardarEnStorage();
-                        mostrarPlaylists();
-                        Swal.fire('Eliminado', 'La playlist ha sido eliminada.', 'success');
-                    }
-                });
+                if (confirm(`¿Estás seguro de que deseas eliminar la playlist "${playlist.nombre}"?`)) {
+                    simulador.playlists.splice(index, 1);
+                    simulador.guardarEnStorage();
+                    mostrarPlaylists();
+                }
             });
 
             buttonsContainer.appendChild(agregarCancionBtn);
+            buttonsContainer.appendChild(verCancionesBtn);
             buttonsContainer.appendChild(eliminarPlaylistBtn);
+
             playlistItem.appendChild(playlistInfo);
             playlistItem.appendChild(buttonsContainer);
             playlistList.appendChild(playlistItem);
@@ -85,4 +67,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     mostrarPlaylists();
+
+    buscarButtonHeader.addEventListener("click", () => {
+        const criterio = criterioBusquedaHeader.value;
+        const textoBusqueda = buscarTextoHeader.value.trim();
+
+        if (textoBusqueda) {
+            const resultados = simulador.buscarPlaylists(criterio, textoBusqueda);
+            if (resultados.length > 0) {
+                searchResultText.innerHTML = resultados.map(playlist => `
+                    <div>
+                        <div><strong>Nombre:</strong> ${playlist.nombre}</div>
+                        <div><strong>Género:</strong> ${playlist.genero}</div>
+                        <button class="bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow mb-2 verCancionesButton">Ver Canciones</button>
+                    </div>
+                `).join("");
+                searchResultButtonsContainer.innerHTML = '<button id="closeSearchModalButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 w-full">Cerrar</button>';
+                searchModal.style.display = "flex";
+
+                document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
+                    });
+                });
+
+                document.getElementById('closeSearchModalButton').addEventListener('click', () => {
+                    searchModal.style.display = "none";
+                });
+            } else {
+                alert("No se encontraron playlists con ese criterio.");
+            }
+        } else {
+            alert("Por favor, introduzca un texto para buscar.");
+        }
+    });
+
+    closeModalButton.addEventListener("click", () => {
+        searchModal.style.display = "none";
+    });
 });
