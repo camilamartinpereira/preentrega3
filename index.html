@@ -6,9 +6,9 @@
     <title>Creador y Buscador de Playlists Musicales</title>
     <link href="src/output.css" rel="stylesheet">
     <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> <!-- Incluyendo SweetAlert2 -->
 </head>
 <body class="bg-pastel-blue text-gray-800">
-    <!-- Contenido principal oculto inicialmente -->
     <div id="mainContent" style="display:none;">
         <header class="bg-white p-4 shadow-md flex justify-between items-center">
             <div class="text-2xl font-bold">Bo! Escuchate Esto</div>
@@ -50,9 +50,9 @@
                     <button id="createAnotherButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Crear otra playlist</button>
                     <button id="editPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Editar playlist</button>
                 </div>
-                <form id="playlistForm" class="space-y-4">
+                <form id="playlistForm" class="space-y-4" novalidate>
                     <div id="formName" class="block">
-                        <input type="text" id="playlistName" class="border rounded-lg p-2 w-full mb-4" placeholder="Nombre de la playlist">
+                        <input type="text" id="playlistName" class="border rounded-lg p-2 w-full mb-4" placeholder="Nombre de la playlist" required>
                     </div>
                     <div id="formGenre" class="hidden">
                         <input type="text" id="playlistGenre" class="border rounded-lg p-2 w-full mb-4" placeholder="Género">
@@ -78,6 +78,7 @@
     <footer class="bg-white p-4 text-center text-gray-600">
         @boescuchateesto
     </footer>
+
     <script src="js/main.js"></script>
     <script src="js/common.js"></script>
     
