@@ -1,108 +1,67 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const simulador = new SimuladorPlaylists();
-    const playlistList = document.getElementById("playlistList");
+document.addEventListener('DOMContentLoaded', function () {
+    const playlistsContainer = document.getElementById('playlistsContainer');
+    const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const playlistName = urlParams.get('name');
 
-    function mostrarPlaylists() {
-        if (!playlistList) {
-            console.error("Elemento con ID 'playlistList' no encontrado.");
-            return;
+    if (playlistName) {
+        const playlist = playlists.find(p => p.name === playlistName);
+        if (playlist) {
+            renderPlaylistDetails(playlist);
+        } else {
+            playlistsContainer.innerHTML = `<p class="text-center text-xl">No se encontró la playlist.</p>`;
         }
-
-        playlistList.innerHTML = "";
-        simulador.playlists.forEach((playlist, index) => {
-            const playlistItem = document.createElement("div");
-            playlistItem.className = "bg-white p-4 rounded-lg shadow-lg flex justify-between items-center";
-
-            const playlistInfo = document.createElement("div");
-            playlistInfo.innerHTML = `
-                <div class="text-xl font-bold">${playlist.nombre}</div>
-                <div class="text-lg">Género: ${playlist.genero}</div>
-                <div class="text-lg">Duración Total: ${playlist.duracionTotal} min</div>
-            `;
-
-            const buttonsContainer = document.createElement("div");
-            buttonsContainer.className = "flex space-x-2";
-            
-            const agregarCancionBtn = document.createElement("button");
-            agregarCancionBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
-            agregarCancionBtn.textContent = "Agregar Canción";
-            agregarCancionBtn.addEventListener("click", () => {
-                const nombreCancion = prompt("Ingrese el nombre de la canción:");
-                const duracionCancion = prompt("Ingrese la duración de la canción (en minutos):");
-                if (nombreCancion && !isNaN(duracionCancion)) {
-                    playlist.agregarCancion(nombreCancion, duracionCancion);
-                    simulador.guardarEnStorage();
-                    mostrarPlaylists();
-                } else {
-                    alert("Por favor, ingrese un nombre válido y una duración numérica para la canción.");
-                }
-            });
-
-            const verCancionesBtn = document.createElement("button");
-            verCancionesBtn.className = "bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow";
-            verCancionesBtn.textContent = "Ver Canciones";
-            verCancionesBtn.addEventListener("click", () => {
-                alert(`Canciones en ${playlist.nombre}:\n${playlist.canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
-            });
-
-            const eliminarPlaylistBtn = document.createElement("button");
-            eliminarPlaylistBtn.className = "bg-red-500 text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-red-700";
-            eliminarPlaylistBtn.textContent = "Eliminar Playlist";
-            eliminarPlaylistBtn.addEventListener("click", () => {
-                if (confirm(`¿Estás seguro de que deseas eliminar la playlist "${playlist.nombre}"?`)) {
-                    simulador.playlists.splice(index, 1);
-                    simulador.guardarEnStorage();
-                    mostrarPlaylists();
-                }
-            });
-
-            buttonsContainer.appendChild(agregarCancionBtn);
-            buttonsContainer.appendChild(verCancionesBtn);
-            buttonsContainer.appendChild(eliminarPlaylistBtn);
-
-            playlistItem.appendChild(playlistInfo);
-            playlistItem.appendChild(buttonsContainer);
-            playlistList.appendChild(playlistItem);
-        });
+    } else {
+        renderAllPlaylists(playlists);
     }
 
-    mostrarPlaylists();
-
-    buscarButtonHeader.addEventListener("click", () => {
-        const criterio = criterioBusquedaHeader.value;
-        const textoBusqueda = buscarTextoHeader.value.trim();
-
-        if (textoBusqueda) {
-            const resultados = simulador.buscarPlaylists(criterio, textoBusqueda);
-            if (resultados.length > 0) {
-                searchResultText.innerHTML = resultados.map(playlist => `
-                    <div>
-                        <div><strong>Nombre:</strong> ${playlist.nombre}</div>
-                        <div><strong>Género:</strong> ${playlist.genero}</div>
-                        <button class="bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow mb-2 verCancionesButton">Ver Canciones</button>
-                    </div>
-                `).join("");
-                searchResultButtonsContainer.innerHTML = '<button id="closeSearchModalButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 w-full">Cerrar</button>';
-                searchModal.style.display = "flex";
-
-                document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
-                    button.addEventListener('click', () => {
-                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
-                    });
-                });
-
-                document.getElementById('closeSearchModalButton').addEventListener('click', () => {
-                    searchModal.style.display = "none";
-                });
-            } else {
-                alert("No se encontraron playlists con ese criterio.");
-            }
+    function renderAllPlaylists(playlists) {
+        playlistsContainer.innerHTML = '';
+        if (playlists.length === 0) {
+            playlistsContainer.innerHTML = `<p class="text-center text-xl">No tienes playlists guardadas.</p>`;
         } else {
-            alert("Por favor, introduzca un texto para buscar.");
+            playlists.forEach(playlist => {
+                const playlistElement = document.createElement('div');
+                playlistElement.className = 'bg-white p-4 rounded-lg shadow-md';
+                playlistElement.innerHTML = `
+                    <h3 class="text-xl font-bold">${playlist.name}</h3>
+                    <p>Género: ${playlist.genre}</p>
+                    <button class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow mt-2" onclick="editPlaylist('${playlist.name}')">Editar</button>
+                    <button class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 mt-2" onclick="deletePlaylist('${playlist.name}')">Eliminar</button>
+                `;
+                playlistsContainer.appendChild(playlistElement);
+            });
         }
-    });
+    }
 
-    closeModalButton.addEventListener("click", () => {
-        searchModal.style.display = "none";
-    });
+    function renderPlaylistDetails(playlist) {
+        playlistsContainer.innerHTML = `
+            <h2 class="text-2xl font-bold mb-4">${playlist.name}</h2>
+            <p class="text-lg mb-4">Género: ${playlist.genre}</p>
+            <button class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow" onclick="editPlaylist('${playlist.name}')">Editar Playlist</button>
+            <button class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700" onclick="deletePlaylist('${playlist.name}')">Eliminar Playlist</button>
+        `;
+    }
 });
+
+function editPlaylist(name) {
+    const newGenre = prompt("Introduce el nuevo género para la playlist:", "");
+    if (newGenre) {
+        let playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+        const playlistIndex = playlists.findIndex(p => p.name === name);
+        if (playlistIndex > -1) {
+            playlists[playlistIndex].genre = newGenre;
+            localStorage.setItem('playlists', JSON.stringify(playlists));
+            alert('Playlist actualizada');
+            location.reload();
+        }
+    }
+}
+
+function deletePlaylist(name) {
+    let playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+    playlists = playlists.filter(playlist => playlist.name !== name);
+    localStorage.setItem('playlists', JSON.stringify(playlists));
+    location.reload();
+}
+

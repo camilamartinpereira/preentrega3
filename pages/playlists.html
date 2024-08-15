@@ -28,24 +28,15 @@
     </header>
     <div class="container mx-auto p-4">
         <div class="bg-white p-4 rounded-lg shadow-lg mx-auto w-[90%] mb-8">
-            <div class="text-center text-3xl font-bold mb-4">Mis Playlists</div>
-            <div id="playlistList" class="grid grid-cols-1 gap-4">
-                <!-- Playlists will be dynamically added here -->
+            <div class="text-2xl font-bold text-center">Mis Playlists</div>
+            <div id="playlistsContainer" class="space-y-4">
+                <!-- Aquí se mostrarán dinámicamente las playlists -->
             </div>
         </div>
     </div>
 
-    <div id="searchModal" class="fixed hidden inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
-            <div class="flex justify-between items-center mb-4">
-                <div class="text-xl font-bold">Resultado de Búsqueda</div>
-                <button id="closeModalButton" class="text-red-500 font-bold focus:outline-none">X</button>
-            </div>
-            <div class="text-lg mb-4" id="searchResultText"></div>
-            <div id="searchResultButtonsContainer"></div>
-            <button id="viewPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow hidden">Ver Playlist</button>
-        </div>
-    </div>
+    <footer class="bg-white p-4 text-center text-gray-600">@boescuchateesto</footer>
+
     <script src="../js/common.js"></script>
     <script src="../js/playlists.js"></script>
     <script>

@@ -1,111 +1,144 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const simulador = new SimuladorPlaylists();
-    const comenzarButton = document.getElementById("comenzarButton");
-    const playlistFormContainer = document.getElementById("playlistFormContainer");
-    const playlistForm = document.getElementById("playlistForm");
-    const step1 = document.getElementById("step1");
-    const step2 = document.getElementById("step2");
-    const step3 = document.getElementById("step3");
-    const formName = document.getElementById("formName");
-    const formGenre = document.getElementById("formGenre");
-    const submitButton = document.getElementById("submitButton");
-    const createAnotherButton = document.getElementById("createAnotherButton");
-    const editPlaylistButton = document.getElementById("editPlaylistButton");
-    const buscarButtonHeader = document.getElementById("buscarButtonHeader");
-    const searchResultText = document.getElementById("searchResultText");
-    const searchModal = document.getElementById("searchModal");
-    const closeModalButton = document.getElementById("closeModalButton");
-    const criterioBusquedaHeader = document.getElementById("criterioBusquedaHeader");
-    const buscarTextoHeader = document.getElementById("buscarTextoHeader");
-    const searchResultButtonsContainer = document.getElementById("searchResultButtonsContainer");
+    const mainContent = document.getElementById('mainContent');
+    const playlistFormContainer = document.getElementById('playlistFormContainer');
+    const comenzarButton = document.getElementById('comenzarButton');
+    const playlistForm = document.getElementById('playlistForm');
+    const playlistNameInput = document.getElementById('playlistName');
+    const playlistGenreInput = document.getElementById('playlistGenre');
+    const submitButton = document.getElementById('submitButton');
+    const searchDropdown = document.getElementById('searchDropdown');
+    const searchModal = document.getElementById('searchModal');
+    const closeModalButton = document.getElementById('closeModalButton');
+    const searchResultText = document.getElementById('searchResultText');
+    const searchResultButtonsContainer = document.getElementById('searchResultButtonsContainer');
+    const viewPlaylistButton = document.getElementById('viewPlaylistButton');
+    const createAnotherButton = document.getElementById('createAnotherButton');
+    const editPlaylistButton = document.getElementById('editPlaylistButton');
 
-    comenzarButton.addEventListener("click", () => {
-        playlistFormContainer.style.display = "block";
-        comenzarButton.style.display = "none";
-    });
+    const playlists = [];
 
-    submitButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        const playlistName = document.getElementById("playlistName").value;
-        const playlistGenre = document.getElementById("playlistGenre").value;
-
-        if (step1.style.display !== "none") {
-            if (!playlistName) {
-                alert("🚫 Por favor, ingrese un nombre para la playlist.");
-                return;
+    async function showCredentialsPopup() {
+        try {
+            const response = await fetch('data/credentials.json');
+            if (!response.ok) {
+                throw new Error('Error en la carga del archivo');
             }
-            step1.style.display = "none";
-            step2.style.display = "block";
-            formName.style.display = "none";
-            formGenre.style.display = "block";
-            submitButton.innerText = "Continuar";
-        } else if (step2.style.display !== "none") {
-            if (!playlistGenre) {
-                alert("🚫 Por favor, ingrese el género para la playlist.");
-                return;
-            }
-            simulador.crearPlaylist(playlistName, playlistGenre);
-            playlistForm.reset();
-            step2.style.display = "none";
-            step3.style.display = "block";
-            formName.style.display = "none";
-            formGenre.style.display = "none";
-            submitButton.style.display = "none";
+            const credentials = await response.json();
+
+            const popup = document.createElement('div');
+            popup.className = 'fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50';
+            popup.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+                    <div class="text-xl font-bold mb-4">Ingrese sus credenciales</div>
+                    <input type="text" id="usernameInput" class="border rounded-lg p-2 w-full mb-4" placeholder="Usuario">
+                    <input type="password" id="passwordInput" class="border rounded-lg p-2 w-full mb-4" placeholder="Contraseña">
+                    <button id="validateCredentialsButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Validar</button>
+                    <button id="closePopupButton" class="text-red-500 font-bold focus:outline-none mt-2">Cancelar</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+
+            document.getElementById('validateCredentialsButton').addEventListener('click', () => {
+                const usernameInput = document.getElementById('usernameInput').value;
+                const passwordInput = document.getElementById('passwordInput').value;
+
+                const validUser = credentials.users.find(user => 
+                    user.username === usernameInput && user.password === passwordInput
+                );
+
+                if (validUser) {
+                    document.body.removeChild(popup);
+                    mainContent.style.display = "block";
+                } else {
+                    alert("🚫 Credenciales incorrectas. Intente nuevamente.");
+                }
+            });
+
+            document.getElementById('closePopupButton').addEventListener('click', () => {
+                document.body.removeChild(popup);
+            });
+        } catch (error) {
+            console.error('Error al cargar las credenciales:', error);
         }
+    }
+
+    // Mostrar el popup al cargar la página
+    showCredentialsPopup();
+
+    // Lógica para crear playlists
+    let currentStep = 1;
+
+    comenzarButton.addEventListener('click', () => {
+        playlistFormContainer.style.display = 'block';
+        updateFormSteps();
     });
 
-    createAnotherButton.addEventListener("click", () => {
-        playlistFormContainer.style.display = "block";
-        step1.style.display = "block";
-        step2.style.display = "none";
-        step3.style.display = "none";
-        formName.style.display =
-        formName.style.display = "block";
-        formGenre.style.display = "none";
-        comenzarButton.style.display = "none";
-        submitButton.style.display = "block";
-        submitButton.innerText = "Continuar";
-    });
+    playlistForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    editPlaylistButton.addEventListener("click", () => {
-        window.location.href = "pages/playlists.html";
-    });
-
-    buscarButtonHeader.addEventListener("click", () => {
-        const criterio = criterioBusquedaHeader.value;
-        const textoBusqueda = buscarTextoHeader.value.trim();
-
-        if (textoBusqueda) {
-            const resultados = simulador.buscarPlaylists(criterio, textoBusqueda);
-            if (resultados.length > 0) {
-                searchResultText.innerHTML = resultados.map(playlist => `
-                    <div>
-                        <div><strong>Nombre:</strong> ${playlist.nombre}</div>
-                        <div><strong>Género:</strong> ${playlist.genero}</div>
-                        <button class="bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow mb-2 verCancionesButton">Ver Canciones</button>
-                    </div>
-                `).join("");
-                searchResultButtonsContainer.innerHTML = '<button id="closeSearchModalButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 w-full">Cerrar</button>';
-                searchModal.style.display = "flex";
-
-                document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
-                    button.addEventListener('click', () => {
-                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
-                    });
-                });
-
-                document.getElementById('closeSearchModalButton').addEventListener('click', () => {
-                    searchModal.style.display = "none";
-                });
-            } else {
-                alert("No se encontraron playlists con ese criterio.");
+        if (currentStep === 1) {
+            if (playlistNameInput.value.trim() === "") {
+                alert("Por favor, ingresa un nombre para la playlist.");
+                return;
             }
+            currentStep++;
+        } else if (currentStep === 2) {
+            if (playlistGenreInput.value.trim() === "") {
+                alert("Por favor, ingresa un género para la playlist.");
+                return;
+            }
+            const newPlaylist = {
+                name: playlistNameInput.value.trim(),
+                genre: playlistGenreInput.value.trim(),
+                songs: []
+            };
+            playlists.push(newPlaylist);
+            alert(`¡Playlist "${newPlaylist.name}" creada exitosamente!`);
+            currentStep++;
+        }
+
+        updateFormSteps();
+    });
+
+    createAnotherButton.addEventListener('click', () => {
+        resetForm();
+        currentStep = 1;
+        updateFormSteps();
+    });
+
+    editPlaylistButton.addEventListener('click', () => {
+        alert("Funcionalidad de edición pendiente de implementación.");
+    });
+
+    function updateFormSteps() {
+        document.getElementById('step1').style.display = currentStep === 1 ? 'block' : 'none';
+        document.getElementById('step2').style.display = currentStep === 2 ? 'block' : 'none';
+        document.getElementById('step3').style.display = currentStep === 3 ? 'block' : 'none';
+        document.getElementById('formName').style.display = currentStep === 1 ? 'block' : 'none';
+        document.getElementById('formGenre').style.display = currentStep === 2 ? 'block' : 'none';
+        submitButton.style.display = currentStep < 3 ? 'block' : 'none';
+        searchDropdown.style.display = currentStep === 3 ? 'block' : 'none';
+    }
+
+    function resetForm() {
+        playlistNameInput.value = '';
+        playlistGenreInput.value = '';
+    }
+
+    viewPlaylistButton.addEventListener('click', () => {
+        const playlistName = playlistNameInput.value.trim();
+        const playlist = playlists.find(pl => pl.name === playlistName);
+
+        if (playlist) {
+            searchResultText.textContent = `Nombre: ${playlist.name} | Género: ${playlist.genre}`;
         } else {
-            alert("Por favor, introduzca un texto para buscar.");
+            searchResultText.textContent = "Playlist no encontrada.";
         }
+
+        searchModal.style.display = 'block';
     });
 
-    closeModalButton.addEventListener("click", () => {
-        searchModal.style.display = "none";
+    closeModalButton.addEventListener('click', () => {
+        searchModal.style.display = 'none';
     });
 });

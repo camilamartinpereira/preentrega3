@@ -1,71 +1,50 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const searchButtons = document.querySelectorAll('#buscarButtonHeader');
+    const searchModal = document.getElementById('searchModal');
+    const closeModalButton = document.getElementById('closeModalButton');
+    const searchResultText = document.getElementById('searchResultText');
+    const searchResultButtonsContainer = document.getElementById('searchResultButtonsContainer');
 
-class SimuladorPlaylists {
-    constructor() {
-        this.playlists = this.cargarDesdeStorage();
-    }
+    searchButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const criterio = document.getElementById('criterioBusquedaHeader').value;
+            const texto = document.getElementById('buscarTextoHeader').value.toLowerCase();
+            const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
 
-    crearPlaylist(nombre, genero) {
-        if (nombre && genero) {
-            const nuevaPlaylist = new Playlist(nombre, genero);
-            this.playlists.push(nuevaPlaylist);
-            this.guardarEnStorage();
-            console.log("✅ Playlist agregada:", nuevaPlaylist);
-        } else {
-            alert("🚫 Por favor, ingrese información válida.");
-        }
-    }
+            const result = playlists.find(playlist => {
+                if (criterio === 'nombre') {
+                    return playlist.name.toLowerCase().includes(texto);
+                } else if (criterio === 'genero') {
+                    return playlist.genre.toLowerCase().includes(texto);
+                }
+            });
 
-    buscarPlaylists(criterio, texto) {
-        return this.playlists.filter(pl => pl[criterio].toLowerCase().includes(texto.toLowerCase()));
-    }
+            if (result) {
+                searchResultText.textContent = `Playlist encontrada: ${result.name} (${result.genre})`;
+                searchResultButtonsContainer.innerHTML = `
+                    <button class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow" onclick="viewPlaylist('${result.name}')">Ver Playlist</button>
+                    <button class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700" onclick="deletePlaylist('${result.name}')">Eliminar Playlist</button>
+                `;
+            } else {
+                searchResultText.textContent = 'No se encontró ninguna playlist con ese criterio.';
+            }
 
-    guardarEnStorage() {
-        localStorage.setItem('playlists', JSON.stringify(this.playlists));
-    }
-
-    cargarDesdeStorage() {
-        const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
-        return playlists.map(pl => {
-            const playlist = new Playlist(pl.nombre, pl.genero);
-            playlist.canciones = pl.canciones.map(c => new Cancion(c.nombre, c.duracion));
-            playlist.duracionTotal = pl.duracionTotal;
-            return playlist;
+            searchModal.classList.remove('hidden');
         });
-    }
+    });
+
+    closeModalButton.addEventListener('click', () => {
+        searchModal.classList.add('hidden');
+    });
+});
+
+function viewPlaylist(name) {
+    window.location.href = `playlists.html?name=${encodeURIComponent(name)}`;
 }
 
-class Playlist {
-    constructor(nombre, genero) {
-        this.nombre = nombre;
-        this.genero = genero;
-        this.canciones = [];
-        this.duracionTotal = 0;
-    }
-
-    agregarCancion(nombre, duracion) {
-        if (nombre && duracion && !isNaN(duracion)) {
-            const nuevaCancion = new Cancion(nombre, duracion);
-            this.canciones.push(nuevaCancion);
-            this.duracionTotal += parseFloat(duracion);
-        } else {
-            alert("🚫 Información de la canción no válida.");
-        }
-    }
-
-    eliminarCancion(nombre) {
-        const index = this.canciones.findIndex(c => c.nombre === nombre);
-        if (index !== -1) {
-            this.duracionTotal -= this.canciones[index].duracion;
-            this.canciones.splice(index, 1);
-        } else {
-            alert("🚫 Canción no encontrada.");
-        }
-    }
-}
-
-class Cancion {
-    constructor(nombre, duracion) {
-        this.nombre = nombre;
-        this.duracion = parseFloat(duracion);
-    }
+function deletePlaylist(name) {
+    let playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+    playlists = playlists.filter(playlist => playlist.name !== name);
+    localStorage.setItem('playlists', JSON.stringify(playlists));
+    location.reload();
 }
