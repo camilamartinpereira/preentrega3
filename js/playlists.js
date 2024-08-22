@@ -32,12 +32,10 @@ document.addEventListener("DOMContentLoaded", function () {
             playlistDiv.querySelector('.btn-delete-playlist').addEventListener('click', () => eliminarPlaylist(index));
         });
 
-        // Iniciar tippy.js en los botones
         tippy('.btn-add-song, .btn-view-songs, .btn-create-spotify, .btn-delete-playlist', {
             theme: 'light-border'
         });
 
-        // Guardar el estado actualizado de las playlists en localStorage
         localStorage.setItem('playlists', JSON.stringify(playlists));
     }
 
