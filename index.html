@@ -6,27 +6,28 @@
     <title>Bo! Escuchate Esto</title>
     <link href="/src/output.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark/dark.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
 </head>
 <body class="bg-pink-50 text-gray-800">
     <header class="bg-pink-300 p-4 flex justify-between items-center shadow-md">
         <h1 class="text-2xl font-bold text-pink-800">Bo! Escuchate esto</h1>
         <div class="flex items-center space-x-2">
             <input id="searchInput" type="text" placeholder="Buscar playlists" class="rounded p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500">
-            <button id="searchBtn" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">
+            <button id="searchBtn" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded-md transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </button>
         </div>
         <div>
-            <button onclick="location.href='../src/index.html'" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">Inicio</button>
-            <button onclick="location.href='../pages/playlists.html'" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">Mis Playlists</button>
+            <button onclick="location.href='index.html'" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded-md transition-colors">Inicio</button>
+            <button onclick="location.href='pages/playlists.html'" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded-md transition-colors">Mis Playlists</button>
         </div>
     </header>
 
     <section id="hero" class="text-center py-16">
         <h2 class="text-4xl font-bold text-pink-700">Bienvenido a tu viaje musical</h2>
-        <button id="crearPlaylistBtn" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition-shadow">Crear nueva playlist</button>
+        <button id="crearPlaylistBtn" class="mt-8 bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md transition-shadow">Crear nueva playlist</button>
     </section>
 
     <section id="crearPlaylist" class="p-8" style="display:none;">
@@ -35,7 +36,17 @@
 
     <section id="recomendarPlaylist" class="p-8">
         <h3 class="text-2xl font-bold mb-4 text-pink-700">Recomendar una playlist</h3>
-        <button id="recomendarBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-shadow">Buscar Recomendaciones</button>
+        <div class="mb-4">
+            <label for="genreSelect" class="block text-pink-700 mb-2">Selecciona un género:</label>
+            <select id="genreSelect" class="p-2 border border-gray-300 rounded w-full">
+                <option value="pop">Pop</option>
+                <option value="rock">Rock</option>
+                <option value="jazz">Jazz</option>
+                <option value="hip-hop">Hip-hop</option>
+                <option value="classical">Clásica</option>
+            </select>
+        </div>
+        <button id="recomendarBtn" class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md transition-shadow">Buscar Recomendaciones</button>
         <div id="spotifyRecomendaciones" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" style="display: none;">
             <!-- Contenido dinámico generado por JS -->
         </div>
@@ -46,6 +57,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <script src="../js/main.js"></script>
 </body>
 </html>

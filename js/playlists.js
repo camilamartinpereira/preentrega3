@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
         playlistsContainer.innerHTML = '';
 
         playlists.forEach((playlist, index) => {
-            // Asegurar que la propiedad songs exista y sea un array
             if (!playlist.songs) {
                 playlist.songs = [];
             }
@@ -18,22 +17,119 @@ document.addEventListener("DOMContentLoaded", function () {
                 <h3 class="text-xl font-bold text-pink-600 mb-2">${playlist.name}</h3>
                 <p class="text-gray-700 mb-2">Género: ${playlist.genre}</p>
                 <div class="flex flex-col space-y-2">
-                    <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md" data-index="${index}">Agregar canción</button>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md" data-index="${index}">Ver canciones</button>
-                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md" data-index="${index}">Eliminar playlist</button>
+                    <button class="btn-add-song bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-md" data-index="${index}">Agregar canción</button>
+                    <button class="btn-view-songs bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-md" data-index="${index}">Ver canciones</button>
+                    <button class="btn-create-spotify bg-purple-400 hover:bg-purple-500 text-white px-4 py-2 rounded-md" data-index="${index}">Crear en Spotify</button>
+                    <button class="btn-delete-playlist bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-md" data-index="${index}">Eliminar playlist</button>
                 </div>
             `;
 
             playlistsContainer.appendChild(playlistDiv);
 
-            // Eventos para botones
-            playlistDiv.querySelector('.bg-green-500').addEventListener('click', () => agregarCancion(index));
-            playlistDiv.querySelector('.bg-blue-500').addEventListener('click', () => verCanciones(index));
-            playlistDiv.querySelector('.bg-red-500').addEventListener('click', () => eliminarPlaylist(index));
+            playlistDiv.querySelector('.btn-add-song').addEventListener('click', () => agregarCancion(index));
+            playlistDiv.querySelector('.btn-view-songs').addEventListener('click', () => verCanciones(index));
+            playlistDiv.querySelector('.btn-create-spotify').addEventListener('click', () => crearPlaylistEnSpotify(index));
+            playlistDiv.querySelector('.btn-delete-playlist').addEventListener('click', () => eliminarPlaylist(index));
+        });
+
+        // Iniciar tippy.js en los botones
+        tippy('.btn-add-song, .btn-view-songs, .btn-create-spotify, .btn-delete-playlist', {
+            theme: 'light-border'
         });
 
         // Guardar el estado actualizado de las playlists en localStorage
         localStorage.setItem('playlists', JSON.stringify(playlists));
+    }
+
+    async function crearPlaylistEnSpotify(index) {
+        const token = await authenticateWithSpotify();
+
+        if (!token) {
+            Swal.fire('Error', 'No se pudo autenticar con Spotify', 'error');
+            return;
+        }
+
+        const playlistName = playlists[index].name;
+        const songUris = await buscarCancionesEnSpotify(playlists[index].songs, token);
+
+        const playlistId = await crearNuevaPlaylistEnSpotify(playlistName, token);
+
+        if (playlistId && songUris.length > 0) {
+            await agregarCancionesAPlaylist(playlistId, songUris, token);
+            Swal.fire('Playlist creada en Spotify', '¡Tu playlist ha sido creada exitosamente en Spotify!', 'success');
+        } else {
+            Swal.fire('Error', 'No se pudo crear la playlist en Spotify', 'error');
+        }
+    }
+
+    async function authenticateWithSpotify() {
+        const clientId = '3269f6be905542e4a55dace8b033a9ac';
+        const redirectUri = window.location.origin;
+        const scope = 'playlist-modify-public playlist-modify-private';
+        const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+
+        return new Promise((resolve) => {
+            const authWindow = window.open(authUrl, 'spotify-auth', 'width=500,height=700');
+            const interval = setInterval(() => {
+                try {
+                    const url = authWindow.location.href;
+                    if (url.includes('#access_token')) {
+                        const accessToken = new URLSearchParams(url.split('#')[1]).get('access_token');
+                        authWindow.close();
+                        clearInterval(interval);
+                        resolve(accessToken);
+                    }
+                } catch (error) {}
+            }, 1000);
+        });
+    }
+
+    async function buscarCancionesEnSpotify(songs, token) {
+        const songUris = [];
+        for (const song of songs) {
+            const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(song.name + ' ' + song.artist)}&type=track&limit=1`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (data.tracks.items.length > 0) {
+                songUris.push(data.tracks.items[0].uri);
+            }
+        }
+        return songUris;
+    }
+
+    async function crearNuevaPlaylistEnSpotify(playlistName, token) {
+        const response = await fetch('https://api.spotify.com/v1/me/playlists', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: playlistName,
+                description: 'Playlist creada desde Bo! Escuchate Esto',
+                public: false
+            })
+        });
+
+        const data = await response.json();
+        return data.id;
+    }
+
+    async function agregarCancionesAPlaylist(playlistId, songUris, token) {
+        await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uris: songUris
+            })
+        });
     }
 
     function agregarCancion(index) {
@@ -58,7 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (result.isConfirmed) {
                 const song = result.value;
 
-                // Asegurar que la playlist tiene un array de canciones
                 if (!playlists[index].songs) {
                     playlists[index].songs = [];
                 }
@@ -71,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function verCanciones(index) {
-        // Asegurar que la playlist tiene un array de canciones
         const songs = playlists[index].songs || [];
 
         if (songs.length === 0) {
@@ -105,6 +199,5 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Renderiza las playlists al cargar la página
     renderPlaylists();
 });

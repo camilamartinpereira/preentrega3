@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
+    const genreSelect = document.getElementById('genreSelect');
 
     searchBtn.addEventListener('click', searchPlaylists);
 
@@ -32,6 +33,10 @@ document.addEventListener("DOMContentLoaded", function () {
             Swal.fire('Credenciales incorrectas', '', 'error').then(() => {
                 checkUserCredentials();
             });
+        } else {
+            Swal.fire(`Bienvenido ${user.username}`, '', 'success').then(() => {
+                localStorage.setItem('sessionActive', true);
+            });
         }
     }
 
@@ -57,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <ul class="list-disc pl-5">
                         ${match.songs?.map(song => `<li>${song.name} - ${song.artist}</li>`).join('') || '<li>Sin canciones</li>'}
                     </ul>
-                    <button onclick="location.href='../pages/playlists.html'" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Editar Playlist</button>
+                    <button onclick="location.href='../pages/playlists.html'" class="mt-4 bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-md">Editar Playlist</button>
                 </div>
             `).join('<hr class="my-4">');
 
@@ -89,8 +94,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para obtener recomendaciones de playlists de Spotify
     async function fetchSpotifyRecomendaciones() {
         const token = await fetchSpotifyToken();
+        const genre = genreSelect.value.toLowerCase();
 
-        const response = await fetch('https://api.spotify.com/v1/browse/featured-playlists?country=US&limit=6', {
+        const response = await fetch(`https://api.spotify.com/v1/search?q=${genre}&type=playlist&limit=6`, {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
@@ -99,8 +105,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await response.json();
         const playlists = data.playlists.items;
 
-        // Seleccionamos 3 playlists aleatorias
-        const selectedPlaylists = playlists.sort(() => 0.5 - Math.random()).slice(0, 3);
+        // Filtramos playlists que contengan el género seleccionado en el nombre
+        const filteredPlaylists = playlists.filter(playlist =>
+            playlist.name.toLowerCase().includes(genre)
+        );
+
+        // Seleccionamos 3 playlists aleatorias de las filtradas
+        const selectedPlaylists = filteredPlaylists.sort(() => 0.5 - Math.random()).slice(0, 3);
 
         const spotifyContainer = document.getElementById('spotifyRecomendaciones');
         spotifyContainer.style.display = 'grid';
@@ -130,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <ul class="list-disc pl-5 mb-4">
                     ${songs.map(song => `<li>${song.name} - ${song.artist}</li>`).join('')}
                 </ul>
-                <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md mt-2">Agregar a mis playlists</button>
+                <button class="bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-md mt-2">Agregar a mis playlists</button>
             `;
 
             playlistElement.querySelector('button').addEventListener('click', () => {
@@ -163,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <h3 class="text-xl font-bold">¿Qué nombre le deseas poner?</h3>
                 <input id="playlistName" type="text" class="mt-2 p-2 border border-gray-300 rounded w-full">
             </div>
-            <button id="siguienteBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Siguiente</button>
+            <button id="siguienteBtn" class="bg-blue-400 text-white px-4 py-2 rounded">Siguiente</button>
         `;
 
         document.getElementById("siguienteBtn").addEventListener("click", renderGeneroPlaylistForm);
@@ -184,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <option value="Clásica">Clásica</option>
                     </select>
                 </div>
-                <button id="crearBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Crear</button>
+                <button id="crearBtn" class="bg-blue-400 text-white px-4 py-2 rounded">Crear</button>
             `;
 
             document.getElementById("crearBtn").addEventListener("click", () => {
@@ -216,5 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
     recomendarBtn.addEventListener("click", fetchSpotifyRecomendaciones);
 
     // Iniciar validación de credenciales al cargar la página
-    checkUserCredentials();
+    if (!localStorage.getItem('sessionActive')) {
+        checkUserCredentials();
+    }
 });
