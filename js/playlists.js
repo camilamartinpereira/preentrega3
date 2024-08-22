@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function crearPlaylistEnSpotify(index) {
         const token = await authenticateWithSpotify();
 
+        // Primera validación: verificar si el token es válido
         if (!token) {
             Swal.fire('Error', 'No se pudo autenticar con Spotify', 'error');
             return;
@@ -50,13 +51,27 @@ document.addEventListener("DOMContentLoaded", function () {
         const playlistName = playlists[index].name;
         const songUris = await buscarCancionesEnSpotify(playlists[index].songs, token);
 
+        // Segunda validación: verificar si las URIs de canciones se obtuvieron correctamente
+        if (songUris.length === 0) {
+            Swal.fire('Error', 'No se pudieron encontrar las canciones en Spotify', 'error');
+            return;
+        }
+
         const playlistId = await crearNuevaPlaylistEnSpotify(playlistName, token);
 
-        if (playlistId && songUris.length > 0) {
-            await agregarCancionesAPlaylist(playlistId, songUris, token);
+        // Tercera validación: verificar si la playlist se creó correctamente en Spotify
+        if (!playlistId) {
+            Swal.fire('Error', 'No se pudo crear la playlist en Spotify', 'error');
+            return;
+        }
+
+        const success = await agregarCancionesAPlaylist(playlistId, songUris, token);
+
+        // Cuarta validación: verificar si las canciones se agregaron correctamente
+        if (success) {
             Swal.fire('Playlist creada en Spotify', '¡Tu playlist ha sido creada exitosamente en Spotify!', 'success');
         } else {
-            Swal.fire('Error', 'No se pudo crear la playlist en Spotify', 'error');
+            Swal.fire('Error', 'No se pudieron agregar las canciones a la playlist en Spotify', 'error');
         }
     }
 
@@ -118,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function agregarCancionesAPlaylist(playlistId, songUris, token) {
-        await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -128,6 +143,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 uris: songUris
             })
         });
+
+        return response.ok; // Devuelve true si la solicitud fue exitosa
     }
 
     function agregarCancion(index) {
