@@ -1,15 +1,15 @@
+/* input.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.bg-pastel-blue {
-    @apply bg-blue-100;
+.form-input {
+    @apply px-4 py-2 border border-pink-300 rounded-md focus:outline-none focus:border-pink-500;
 }
 
-.bg-pastel-pink {
-    @apply bg-pink-300;
+.form-select {
+    @apply px-4 py-2 border border-pink-300 rounded-md focus:outline-none focus:border-pink-500;
 }
 
-.bg-pastel-yellow {
-    @apply bg-yellow-300;
-}
+/* Estilos adicionales según necesidad */

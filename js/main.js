@@ -1,222 +1,220 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const mainContent = document.getElementById('mainContent');
-    const playlistFormContainer = document.getElementById('playlistFormContainer');
-    const comenzarButton = document.getElementById('comenzarButton');
-    const playlistForm = document.getElementById('playlistForm');
-    const playlistNameInput = document.getElementById('playlistName');
-    const playlistGenreInput = document.getElementById('playlistGenre');
-    const submitButton = document.getElementById('submitButton');
-    const searchModal = document.getElementById('searchModal');
-    const closeModalButton = document.getElementById('closeModalButton');
-    const searchResultText = document.getElementById('searchResultText');
-    const searchResultButtonsContainer = document.getElementById('searchResultButtonsContainer');
-    const createAnotherButton = document.getElementById('createAnotherButton');
-    const editPlaylistButton = document.getElementById('editPlaylistButton');
-    const buscarButtonHeader = document.getElementById("buscarButtonHeader");
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
 
-    const simulador = new SimuladorPlaylists();
+    searchBtn.addEventListener('click', searchPlaylists);
 
-    async function showCredentialsPopup() {
-        try {
-            const response = await fetch('data/credentials.json');
-            if (!response.ok) {
-                throw new Error('Error en la carga del archivo');
+    // Función para validar las credenciales de usuario
+    async function checkUserCredentials() {
+        const response = await fetch('../data/credentials.json');
+        const data = await response.json();
+        const { users } = data;
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Iniciar sesión',
+            html:
+                '<input id="swal-input1" class="swal2-input" placeholder="Usuario">' +
+                '<input id="swal-input2" class="swal2-input" type="password" placeholder="Contraseña">',
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                    document.getElementById('swal-input2').value
+                ];
+            },
+            allowOutsideClick: false,
+            backdrop: `rgba(0,0,123,0.4) left top no-repeat`
+        });
+
+        const user = users.find(u => u.username === formValues[0] && u.password === formValues[1]);
+
+        if (!user) {
+            Swal.fire('Credenciales incorrectas', '', 'error').then(() => {
+                checkUserCredentials();
+            });
+        }
+    }
+
+    // Función para realizar búsquedas en las playlists
+    function searchPlaylists() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+
+        const matches = playlists.filter(playlist => {
+            const hasNameMatch = playlist.name?.toLowerCase().includes(searchTerm);
+            const hasGenreMatch = playlist.genre?.toLowerCase().includes(searchTerm);
+            const hasSongMatch = playlist.songs?.some(song => song.name?.toLowerCase().includes(searchTerm));
+
+            return hasNameMatch || hasGenreMatch || hasSongMatch;
+        });
+
+        if (matches.length > 0) {
+            const results = matches.map(match => `
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold">${match.name}</h3>
+                    <p class="text-gray-700">Género: ${match.genre}</p>
+                    <p class="text-gray-700">Canciones:</p>
+                    <ul class="list-disc pl-5">
+                        ${match.songs?.map(song => `<li>${song.name} - ${song.artist}</li>`).join('') || '<li>Sin canciones</li>'}
+                    </ul>
+                    <button onclick="location.href='../pages/playlists.html'" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Editar Playlist</button>
+                </div>
+            `).join('<hr class="my-4">');
+
+            Swal.fire({
+                title: 'Resultados de la búsqueda',
+                html: results,
+                confirmButtonText: 'Cerrar'
+            });
+        } else {
+            Swal.fire('No se encontraron coincidencias.', '', 'info');
+        }
+    }
+
+    // Función para obtener el token de acceso de Spotify
+    async function fetchSpotifyToken() {
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + btoa('3269f6be905542e4a55dace8b033a9ac:5af92f6c0b0243c68a8e8c6ad412bc75')
+            },
+            body: 'grant_type=client_credentials'
+        });
+
+        const data = await response.json();
+        return data.access_token;
+    }
+
+    // Función para obtener recomendaciones de playlists de Spotify
+    async function fetchSpotifyRecomendaciones() {
+        const token = await fetchSpotifyToken();
+
+        const response = await fetch('https://api.spotify.com/v1/browse/featured-playlists?country=US&limit=6', {
+            headers: {
+                'Authorization': 'Bearer ' + token
             }
-            const credentials = await response.json();
+        });
 
-            const popup = document.createElement('div');
-            popup.className = 'fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50';
-            popup.innerHTML =
-                `<div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
-                    <div class="text-xl font-bold mb-4">Ingrese sus credenciales</div>
-                    <input type="text" id="usernameInput" class="border rounded-lg p-2 w-full mb-4" placeholder="Usuario">
-                    <input type="password" id="passwordInput" class="border rounded-lg p-2 w-full mb-4" placeholder="Contraseña">
-                    <button id="validateCredentialsButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Validar</button>
-                    <button id="closePopupButton" class="text-red-500 font-bold focus:outline-none mt-2">Cancelar</button>
-                </div>`;
-            document.body.appendChild(popup);
+        const data = await response.json();
+        const playlists = data.playlists.items;
 
-            document.getElementById('validateCredentialsButton').addEventListener('click', () => {
-                const usernameInput = document.getElementById('usernameInput').value;
-                const passwordInput = document.getElementById('passwordInput').value;
+        // Seleccionamos 3 playlists aleatorias
+        const selectedPlaylists = playlists.sort(() => 0.5 - Math.random()).slice(0, 3);
 
-                const validUser = credentials.users.find(user =>
-                    user.username === usernameInput && user.password === passwordInput
-                );
+        const spotifyContainer = document.getElementById('spotifyRecomendaciones');
+        spotifyContainer.style.display = 'grid';
+        spotifyContainer.innerHTML = '';
 
-                if (validUser) {
-                    document.body.removeChild(popup);
-                    mainContent.style.display = "block";
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Credenciales incorrectas!',
-                        text: 'Intente nuevamente.'
-                    });
+        selectedPlaylists.forEach(async (playlist) => {
+            const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
-            document.getElementById('closePopupButton').addEventListener('click', () => {
-                document.body.removeChild(popup);
+            const playlistDetails = await playlistResponse.json();
+
+            const songs = playlistDetails.tracks.items.slice(0, 5).map(item => ({
+                name: item.track.name,
+                artist: item.track.artists[0].name
+            }));
+
+            const playlistElement = document.createElement('div');
+            playlistElement.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'hover:shadow-lg', 'transition-shadow', 'duration-300');
+
+            playlistElement.innerHTML = `
+                <h3 class="text-xl font-bold text-pink-600 mb-2">${playlist.name}</h3>
+                <p class="text-gray-700 mb-2">Género: ${playlistDetails.genres ? playlistDetails.genres[0] : 'Desconocido'}</p>
+                <p class="text-gray-700 mb-4">Canciones:</p>
+                <ul class="list-disc pl-5 mb-4">
+                    ${songs.map(song => `<li>${song.name} - ${song.artist}</li>`).join('')}
+                </ul>
+                <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md mt-2">Agregar a mis playlists</button>
+            `;
+
+            playlistElement.querySelector('button').addEventListener('click', () => {
+                const userPlaylists = JSON.parse(localStorage.getItem('playlists')) || [];
+                userPlaylists.push({ 
+                    name: playlist.name, 
+                    genre: playlistDetails.genres ? playlistDetails.genres[0] : 'Desconocido', 
+                    songs 
+                });
+                localStorage.setItem('playlists', JSON.stringify(userPlaylists));
+                Swal.fire('Playlist añadida a tus playlists', '', 'success');
             });
-        } catch (error) {
-            console.error('Error al cargar las credenciales:', error);
-        }
+
+            spotifyContainer.appendChild(playlistElement);
+        });
     }
 
-    // Mostrar el popup al cargar la página
-    showCredentialsPopup();
+    // Funcionalidad para crear una nueva playlist
+    const crearPlaylistBtn = document.getElementById("crearPlaylistBtn");
+    const crearPlaylistSection = document.getElementById("crearPlaylist");
 
-    // Lógica para crear playlists
-    let currentStep = 1;
-
-    comenzarButton.addEventListener('click', () => {
-        playlistFormContainer.style.display = 'block';
-        updateFormSteps();
+    crearPlaylistBtn.addEventListener("click", () => {
+        renderNombrePlaylistForm();
+        crearPlaylistSection.style.display = 'block';
     });
 
-    playlistForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    function renderNombrePlaylistForm() {
+        crearPlaylistSection.innerHTML = `
+            <div class="mb-4">
+                <h3 class="text-xl font-bold">¿Qué nombre le deseas poner?</h3>
+                <input id="playlistName" type="text" class="mt-2 p-2 border border-gray-300 rounded w-full">
+            </div>
+            <button id="siguienteBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Siguiente</button>
+        `;
 
-        if (currentStep === 1) {
-            if (playlistNameInput.value.trim() === "") {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Por favor',
-                    text: 'Ingresa un nombre para la playlist.'
-                });
-                return;
-            }
-            currentStep++;
-        } else if (currentStep === 2) {
-            if (playlistGenreInput.value.trim() === "") {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Por favor',
-                    text: 'Ingresa un género para la playlist.'
-                });
-                return;
-            }
-            simulador.crearPlaylist(playlistNameInput.value.trim(), playlistGenreInput.value.trim());
-            Swal.fire({
-                icon: 'success',
-                title: 'Playlist creada!',
-                text: `La playlist "${playlistNameInput.value}" ha sido creada exitosamente!`
-            });
-            currentStep++;
-        }
-
-        updateFormSteps();
-    });
-
-    createAnotherButton.addEventListener('click', () => {
-        resetForm();
-        currentStep = 1;
-        updateFormSteps();
-    });
-
-    editPlaylistButton.addEventListener('click', () => {
-        window.location.href = "pages/playlists.html"; // Cambiado para redirigir a la página de playlists
-    });
-
-    function updateFormSteps() {
-        document.getElementById('step1').style.display = currentStep === 1 ? 'block' : 'none';
-        document.getElementById('step2').style.display = currentStep === 2 ? 'block' : 'none';
-        document.getElementById('step3').style.display = currentStep === 3 ? 'block' : 'none';
-        document.getElementById('formName').style.display = currentStep === 1 ? 'block' : 'none';
-        document.getElementById('formGenre').style.display = currentStep === 2 ? 'block' : 'none';
-        submitButton.style.display = currentStep < 3 ? 'block' : 'none';
+        document.getElementById("siguienteBtn").addEventListener("click", renderGeneroPlaylistForm);
     }
 
-    function resetForm() {
-        playlistNameInput.value = '';
-        playlistGenreInput.value = '';
-    }
+    function renderGeneroPlaylistForm() {
+        const playlistName = document.getElementById("playlistName").value;
+        if (playlistName) {
+            localStorage.setItem('playlistName', playlistName);
+            crearPlaylistSection.innerHTML = `
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold">¿Qué género es?</h3>
+                    <select id="playlistGenre" class="mt-2 p-2 border border-gray-300 rounded w-full">
+                        <option value="Pop">Pop</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Hip-hop">Hip-hop</option>
+                        <option value="Clásica">Clásica</option>
+                    </select>
+                </div>
+                <button id="crearBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Crear</button>
+            `;
 
-    buscarButtonHeader.addEventListener("click", () => {
-        const criterio = document.getElementById("criterioBusquedaHeader").value;
-        const textoBusqueda = document.getElementById("buscarTextoHeader").value.trim();
+            document.getElementById("crearBtn").addEventListener("click", () => {
+                const playlistGenre = document.getElementById("playlistGenre").value;
+                const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+                playlists.push({ name: playlistName, genre: playlistGenre, songs: [] });
+                localStorage.setItem('playlists', JSON.stringify(playlists));
 
-        if (textoBusqueda) {
-            const resultados = simulador.buscarPlaylists(criterio, textoBusqueda);
-            if (resultados.length > 0) {
-                searchResultText.innerHTML = resultados.map(playlist =>
-                    `<div>
-                        <div><strong>Nombre:</strong> ${playlist.nombre}</div>
-                        <div><strong>Género:</strong> ${playlist.genero}</div>
-                        <button class="bg-pastel-pink text-white font-semibold py-1 px-2 rounded shadow-md hover:bg-pastel-yellow mb-2 verCancionesButton">Ver Canciones</button>
-                    </div>`
-                ).join("");
-                searchResultButtonsContainer.innerHTML = '<button id="closeSearchModalButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-red-700 w-full">Cerrar</button>';
-                searchModal.style.display = "flex";
-
-                document.querySelectorAll('.verCancionesButton').forEach((button, index) => {
-                    button.addEventListener('click', () => {
-                        alert(`Canciones en ${resultados[index].nombre}:\n${resultados[index].canciones.map(c => `- ${c.nombre} (${c.duracion} min)`).join('\n')}`);
-                    });
-                });
-
-                document.getElementById('closeSearchModalButton').addEventListener('click', () => {
-                    searchModal.style.display = "none";
-                });
-            } else {
                 Swal.fire({
-                    icon: 'info',
-                    title: 'No se encontraron playlists',
-                    text: 'No se encontraron playlists con ese criterio.'
-                });
-            }
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Buscar',
-                text: 'Por favor, introduzca un texto para buscar.'
-            });
-        }
-    });
-
-    closeModalButton.addEventListener("click", () => {
-        searchModal.style.display = 'none';
-    });
-    
-    // Definición de la función agregarCancion aquí
-    window.agregarCancion = function(playlist) {
-        const popup = document.createElement('div');
-        popup.className = 'fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50';
-        popup.innerHTML =
-            `<div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-                <div class="text-xl font-bold mb-4">Agregar Canción a ${playlist.nombre}</div>
-                <input type="text" id="cancionNombre" class="border rounded-lg p-2 w-full mb-4" placeholder="¿Cuál es el nombre de la canción?">
-                <input type="number" id="cancionDuracion" class="border rounded-lg p-2 w-full mb-4" placeholder="Duración (en minutos)">
-                <button id="addCancionButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Agregar Canción</button>
-                <button id="closeCancionPopupButton" class="text-red-500 font-bold focus:outline-none mt-2">Cancelar</button>
-            </div>`;
-        document.body.appendChild(popup);
-
-        document.getElementById('addCancionButton').addEventListener('click', () => {
-            const nombre = document.getElementById('cancionNombre').value.trim();
-            const duracion = parseFloat(document.getElementById('cancionDuracion').value.trim());
-
-            if (nombre === "" || isNaN(duracion)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Datos inválidos',
-                    text: 'Por favor, asegúrate de que el nombre y la duración sean válidos.'
-                });
-            } else {
-                playlist.agregarCancion(nombre, duracion);
-                Swal.fire({
+                    title: 'Playlist creada con éxito!',
                     icon: 'success',
-                    title: 'Canción agregada!',
-                    text: `La canción "${nombre}" ha sido agregada con éxito.`
+                    confirmButtonText: 'Editar ahora!',
+                    showCancelButton: true,
+                    cancelButtonText: 'Crear otra'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.href = '../pages/playlists.html';
+                    } else {
+                        renderNombrePlaylistForm();
+                    }
                 });
-                document.body.removeChild(popup);
-                mostrarPlaylists(); // Actualiza la lista de playlists en la UI
-            }
-        });
+            });
+        } else {
+            Swal.fire('Por favor, ingresa un nombre para la playlist.', '', 'error');
+        }
+    }
 
-        document.getElementById('closeCancionPopupButton').addEventListener('click', () => {
-            document.body.removeChild(popup);
-        });
-    };
+    const recomendarBtn = document.getElementById("recomendarBtn");
+    recomendarBtn.addEventListener("click", fetchSpotifyRecomendaciones);
+
+    // Iniciar validación de credenciales al cargar la página
+    checkUserCredentials();
 });

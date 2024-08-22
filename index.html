@@ -3,90 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creador y Buscador de Playlists Musicales</title>
-    <link href="src/output.css" rel="stylesheet">
-    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> <!-- Incluyendo SweetAlert2 -->
+    <title>Bo! Escuchate Esto</title>
+    <link href="/src/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark/dark.css">
 </head>
-<body class="bg-pastel-blue text-gray-800">
-    <div id="mainContent" style="display:none;">
-        <header class="bg-white p-4 shadow-md flex justify-between items-center">
-            <div class="text-2xl font-bold">Bo! Escuchate Esto</div>
-            <nav class="flex">
-                <div class="relative">
-                    <button class="text-lg font-semibold text-gray-600 hover:text-gray-800" onclick="toggleSearchDropdown()">Buscar Playlists</button>
-                    <div id="searchDropdown" class="absolute bg-white shadow-lg rounded mt-2 p-4 w-64 hidden">
-                        <select id="criterioBusquedaHeader" class="border rounded-lg p-2 w-full mb-2">
-                            <option value="nombre">Nombre</option>
-                            <option value="genero">Género</option>
-                        </select>
-                        <input type="text" id="buscarTextoHeader" class="border rounded-lg p-2 w-full mb-2" placeholder="Buscar...">
-                        <button id="buscarButtonHeader" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow w-full">Buscar Playlist</button>
-                    </div>
-                </div>
-                <a href="#" class="text-lg font-semibold text-gray-600 ml-4 hover:text-gray-800">Inicio</a>
-                <a href="pages/playlists.html" class="text-lg font-semibold text-gray-600 ml-4 hover:text-gray-800">Mis Playlists</a>
-            </nav>
-        </header>
-        <div class="container mx-auto p-4">
-            <div class="bg-white p-4 rounded-lg shadow-lg mx-auto w-[90%] mb-8">
-                <div class="text-center text-3xl font-bold mb-4">
-                    Creador y Buscador de Playlists Musicales
-                </div>
-                <div class="text-center">
-                    <p class="text-lg mb-4">Organiza y gestiona tus playlists de manera efectiva.</p>
-                    <button class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow" id="comenzarButton">Crear nueva playlist</button>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow-lg mx-auto w-[90%] mb-8" id="playlistFormContainer" style="display:none;">
-                <div id="step1" class="text-xl font-bold mb-4">
-                    ¿Qué nombre le deseas poner a la playlist?
-                </div>
-                <div id="step2" class="hidden">
-                    <p class="text-xl font-bold mb-4">¿Qué género identificas con esta playlist?</p>
-                </div>
-                <div id="step3" class="hidden">
-                    <p class="text-xl font-bold mb-4">Playlist creada con éxito</p>
-                    <button id="createAnotherButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Crear otra playlist</button>
-                    <button id="editPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Editar playlist</button>
-                </div>
-                <form id="playlistForm" class="space-y-4" novalidate>
-                    <div id="formName" class="block">
-                        <input type="text" id="playlistName" class="border rounded-lg p-2 w-full mb-4" placeholder="Nombre de la playlist" required>
-                    </div>
-                    <div id="formGenre" class="hidden">
-                        <input type="text" id="playlistGenre" class="border rounded-lg p-2 w-full mb-4" placeholder="Género">
-                    </div>
-                    <button type="submit" id="submitButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow">Continuar</button>
-                </form>
-            </div>
+<body class="bg-pink-50 text-gray-800">
+    <header class="bg-pink-300 p-4 flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-bold text-pink-800">Bo! Escuchate esto</h1>
+        <div class="flex items-center space-x-2">
+            <input id="searchInput" type="text" placeholder="Buscar playlists" class="rounded p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500">
+            <button id="searchBtn" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </button>
         </div>
-
-        <div id="searchModal" class="fixed hidden inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="text-xl font-bold">Resultado de Búsqueda</div>
-                    <button id="closeModalButton" class="text-red-500 font-bold focus:outline-none">X</button>
-                </div>
-                <div class="text-lg mb-4" id="searchResultText"></div>
-                <div id="searchResultButtonsContainer"></div>
-                <button id="viewPlaylistButton" class="bg-pastel-pink text-white font-semibold py-2 px-4 rounded shadow-md hover:bg-pastel-yellow hidden">Ver Playlist</button>
-            </div>
+        <div>
+            <button onclick="location.href='../src/index.html'" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">Inicio</button>
+            <button onclick="location.href='../pages/playlists.html'" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors">Mis Playlists</button>
         </div>
-    </div>
+    </header>
 
-    <footer class="bg-white p-4 text-center text-gray-600">
-        @boescuchateesto
+    <section id="hero" class="text-center py-16">
+        <h2 class="text-4xl font-bold text-pink-700">Bienvenido a tu viaje musical</h2>
+        <button id="crearPlaylistBtn" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition-shadow">Crear nueva playlist</button>
+    </section>
+
+    <section id="crearPlaylist" class="p-8" style="display:none;">
+        <!-- Contenido dinámico generado por JS -->
+    </section>
+
+    <section id="recomendarPlaylist" class="p-8">
+        <h3 class="text-2xl font-bold mb-4 text-pink-700">Recomendar una playlist</h3>
+        <button id="recomendarBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-shadow">Buscar Recomendaciones</button>
+        <div id="spotifyRecomendaciones" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" style="display: none;">
+            <!-- Contenido dinámico generado por JS -->
+        </div>
+    </section>
+
+    <footer class="bg-pink-300 text-center p-4 mt-8 shadow-md">
+        <p class="text-pink-800">@boescuchateesto 2024</p>
     </footer>
 
-    <script src="js/main.js"></script>
-    <script src="js/common.js"></script>
-    
-    <script>
-        function toggleSearchDropdown() {
-            const dropdown = document.getElementById('searchDropdown');
-            dropdown.classList.toggle('hidden');
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/main.js"></script>
 </body>
 </html>
