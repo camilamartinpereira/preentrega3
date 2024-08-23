@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
     async function crearPlaylistEnSpotify(index) {
         const token = await authenticateWithSpotify();
 
-        // Primera validación: verificar si el token es válido
         if (!token) {
             Swal.fire('Error', 'No se pudo autenticar con Spotify', 'error');
             return;
@@ -51,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const playlistName = playlists[index].name;
         const songUris = await buscarCancionesEnSpotify(playlists[index].songs, token);
 
-        // Segunda validación: verificar si las URIs de canciones se obtuvieron correctamente
         if (songUris.length === 0) {
             Swal.fire('Error', 'No se pudieron encontrar las canciones en Spotify', 'error');
             return;
@@ -59,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const playlistId = await crearNuevaPlaylistEnSpotify(playlistName, token);
 
-        // Tercera validación: verificar si la playlist se creó correctamente en Spotify
         if (!playlistId) {
             Swal.fire('Error', 'No se pudo crear la playlist en Spotify', 'error');
             return;
@@ -67,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const success = await agregarCancionesAPlaylist(playlistId, songUris, token);
 
-        // Cuarta validación: verificar si las canciones se agregaron correctamente
         if (success) {
             Swal.fire('Playlist creada en Spotify', '¡Tu playlist ha sido creada exitosamente en Spotify!', 'success');
         } else {
@@ -77,11 +73,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function authenticateWithSpotify() {
         const clientId = '3269f6be905542e4a55dace8b033a9ac';
-        const redirectUri = 'https://camilamartinpereira.github.io/';
+        const redirectUri = 'https://camilamartinpereira.github.io/'; // URI de redirección
         const scope = 'playlist-modify-public playlist-modify-private';
         const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const authWindow = window.open(authUrl, 'spotify-auth', 'width=500,height=700');
             const interval = setInterval(() => {
                 try {
@@ -92,7 +88,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         clearInterval(interval);
                         resolve(accessToken);
                     }
-                } catch (error) {}
+                } catch (error) {
+                    clearInterval(interval);
+                    reject('Error al obtener el token de acceso');
+                }
             }, 1000);
         });
     }
