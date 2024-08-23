@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function authenticateWithSpotify() {
         const clientId = '3269f6be905542e4a55dace8b033a9ac';
-        const redirectUri = 'https://camilamartinpereira.github.io/'; // URI de redirección
+        const redirectUri = 'https://camilamartinpereira.github.io/preentrega3/'; // URI de redirección correcta
         const scope = 'playlist-modify-public playlist-modify-private';
         const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
 
