@@ -2,6 +2,7 @@
 # Bo! Escuchate Esto
 
 Este proyecto es la entrega final para el curso de JavaScript en Coderhouse. "Bo! Escuchate Esto" es una plataforma interactiva que permite a los usuarios crear, gestionar y recibir recomendaciones de playlists musicales. Está construido con una arquitectura moderna que incluye el uso de JavaScript avanzado, integración con la API de Spotify, y un enfoque en la experiencia del usuario mediante Tailwind CSS, SweetAlert2, y Tippy.js.
+Las credenciales para ingresar se encuentran en data/credentials.json (solo funcionan desde OpenServer, no desde Github Pages debido a que se mantiene la sesion)
 
 ## Descripción del Proyecto
 
