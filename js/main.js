@@ -3,28 +3,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchBtn = document.getElementById('searchBtn');
     const genreSelect = document.getElementById('genreSelect');
 
-    // Evento para buscar playlists
     searchBtn.addEventListener('click', searchPlaylists);
 
-    // Función para cargar credenciales desde el archivo JSON
     async function checkUserCredentials() {
-        try {
-            const response = await fetch('../data/credentials.json');
-            if (!response.ok) throw new Error('No se pudo cargar el archivo de credenciales.');
-            const credentials = await response.json();
-            authenticateUser(credentials.users);
-        } catch (error) {
-            console.error("Error al cargar las credenciales: ", error);
-            Swal.fire('Error', 'No se pudo cargar las credenciales.', 'error');
-        }
+        const credentials = await fetch('../data/credentials.json').then(res => res.json());
+        authenticateUser(credentials.users);
     }
 
-    // Función para autenticar al usuario
     async function authenticateUser(users) {
         const { value: formValues } = await Swal.fire({
             title: 'Iniciar sesión',
-            html: '<input id="swal-input1" class="swal2-input" placeholder="Usuario">' +
-                  '<input id="swal-input2" class="swal2-input" type="password" placeholder="Contraseña">',
+            html:
+                '<input id="swal-input1" class="swal2-input" placeholder="Usuario">' +
+                '<input id="swal-input2" class="swal2-input" type="password" placeholder="Contraseña">',
             focusConfirm: false,
             preConfirm: () => {
                 return [
@@ -43,12 +34,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 checkUserCredentials();
             });
         } else {
-            Swal.fire(`Bienvenido ${user.username}`, '', 'success');
-            // Aquí se puede continuar con la lógica de la aplicación después de la autenticación
+            Swal.fire(`Bienvenido ${user.username}`, '', 'success').then(() => {
+                localStorage.setItem('sessionActive', true);
+            });
         }
     }
 
-    // Función para buscar playlists guardadas en el localStorage
     function searchPlaylists() {
         const searchTerm = searchInput.value.toLowerCase();
         const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
@@ -84,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Función para obtener el token de Spotify
     async function fetchSpotifyToken() {
         const clientId = '3269f6be905542e4a55dace8b033a9ac';
         const clientSecret = '5af92f6c0b0243c68a8e8c6ad412bc75';
@@ -102,7 +92,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return data.access_token;
     }
 
-    // Función para obtener recomendaciones de canciones de Spotify
     async function fetchSpotifyRecomendaciones() {
         const token = await fetchSpotifyToken();
         const genre = localStorage.getItem('playlistGenre').toLowerCase();
@@ -134,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Evento para el botón de crear playlist
     const crearPlaylistBtn = document.getElementById("crearPlaylistBtn");
     const crearPlaylistSection = document.getElementById("crearPlaylist");
 
@@ -143,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
         crearPlaylistSection.style.display = 'block';
     });
 
-    // Función para renderizar el formulario de nombre de la playlist
     function renderNombrePlaylistForm() {
         updateProgress(1);
         crearPlaylistSection.innerHTML = `
@@ -158,7 +145,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("siguienteBtn").addEventListener("click", renderGeneroPlaylistForm);
     }
 
-    // Función para renderizar el formulario de selección de género
     function renderGeneroPlaylistForm() {
         const playlistName = document.getElementById("playlistName").value;
         if (playlistName && playlistName.length >= 3) {
@@ -184,7 +170,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Función para decidir cómo agregar canciones
     function renderAddSongsDecision() {
         const playlistGenre = document.getElementById("playlistGenre").value;
         if (playlistGenre) {
@@ -207,7 +192,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Función para mostrar canciones recomendadas por Spotify
     function renderRecommendedSongs() {
         const genre = localStorage.getItem('playlistGenre').toLowerCase();
         updateProgress(4);
@@ -239,7 +223,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Función para permitir la entrada manual de canciones
     function renderManualSongEntry() {
         updateProgress(4);
         crearPlaylistSection.innerHTML = `
@@ -280,7 +263,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Función para agregar un nuevo campo de entrada para canciones
     function addManualSongInput() {
         const manualSongsContainer = document.getElementById("manualSongsContainer");
         const songInput = document.createElement('div');
@@ -292,7 +274,6 @@ document.addEventListener("DOMContentLoaded", function () {
         manualSongsContainer.appendChild(songInput);
     }
 
-    // Función para mostrar el resumen de la playlist
     function renderSummary() {
         updateProgress(5);
         const playlistName = localStorage.getItem('playlistName');
@@ -337,11 +318,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Iniciar el proceso de autenticación si no hay una sesión activa
-    checkUserCredentials();
+    if (!localStorage.getItem('sessionActive')) {
+        checkUserCredentials();
+    }
 });
 
-// Función para actualizar la barra de progreso en el proceso de creación de playlists
 function updateProgress(step) {
     const progressIndicator = document.getElementById('progressIndicator');
     const progressText = document.getElementById('progressText');
@@ -365,7 +346,6 @@ function updateProgress(step) {
     }
 }
 
-// Configuraciones de Tippy.js para agregar tooltips a los botones
 tippy('.btn-add-song', {
     content: 'Añade una nueva canción a esta playlist',
     theme: 'light-border',
