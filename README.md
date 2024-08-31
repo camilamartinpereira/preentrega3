@@ -1,74 +1,78 @@
-Bo! Escuchate Esto - Gestor de Playlists
-¡Bienvenido a Bo! Escuchate Esto, un gestor de playlists moderno, interactivo y conectado a Spotify! Este proyecto ha sido desarrollado como parte del curso de JavaScript en Coderhouse. La aplicación permite a los usuarios crear, gestionar y descubrir playlists de manera dinámica, todo dentro de una interfaz elegante y fácil de usar.
 
-Descripción
-Bo! Escuchate Esto es un sitio web que permite a los usuarios crear y gestionar playlists personalizadas. Además, ofrece recomendaciones de playlists basadas en la API de Spotify, facilitando la adición de nuevas canciones y el descubrimiento de música. El proyecto utiliza tecnologías modernas como HTML5, CSS3 (Tailwind CSS), JavaScript, SweetAlert2, y Tippy.js para ofrecer una experiencia de usuario fluida y atractiva.
+# Bo! Escuchate Esto
 
-Características
-Creación de Playlists: Crea nuevas playlists mediante un proceso guiado que incluye la selección del nombre, género y la adición de canciones, ya sea manualmente o a través de recomendaciones.
-Gestión de Playlists: Visualiza, edita y elimina playlists fácilmente. Agrega y elimina canciones según tu preferencia.
-Recomendación de Playlists: Obtén recomendaciones de playlists directamente desde Spotify según el género seleccionado.
-Búsqueda Dinámica: Busca playlists por nombre o género desde cualquier página. Las coincidencias se muestran en un popup que incluye opciones para editar la playlist.
-Login Seguro: Sistema de autenticación utilizando credenciales almacenadas en un archivo JSON para proteger el acceso a la aplicación.
-Tecnologías Utilizadas
-HTML5: Estructura y contenido del sitio.
-CSS3 (Tailwind CSS): Diseño responsivo y moderno.
-JavaScript (ES6+): Lógica del sitio, gestión del DOM, interacciones dinámicas y conexión con la API de Spotify.
-SweetAlert2: Notificaciones y alertas interactivas.
-Tippy.js: Mejoras de UX mediante tooltips.
-Spotify Web API: Integración para la búsqueda de canciones y recomendaciones.
-Estructura del Proyecto
-El proyecto sigue la siguiente estructura de archivos:
+Este proyecto es la entrega final para el curso de JavaScript en Coderhouse. "Bo! Escuchate Esto" es una plataforma interactiva que permite a los usuarios crear, gestionar y recibir recomendaciones de playlists musicales. Está construido con una arquitectura moderna que incluye el uso de JavaScript avanzado, integración con la API de Spotify, y un enfoque en la experiencia del usuario mediante Tailwind CSS, SweetAlert2, y Tippy.js.
 
-plaintext
-Copiar código
-/
-├── data/
+## Descripción del Proyecto
+
+"Bo! Escuchate Esto" es un sitio web donde los usuarios pueden:
+
+- **Crear Playlists Personalizadas:** A través de un proceso guiado, los usuarios pueden nombrar sus playlists, seleccionar un género y agregar canciones manualmente o a través de recomendaciones automáticas de Spotify.
+- **Gestionar Playlists:** Los usuarios pueden editar, eliminar y visualizar las canciones dentro de cada playlist que han creado.
+- **Recibir Recomendaciones:** Basado en el género seleccionado, el sistema sugiere playlists de Spotify, que pueden ser agregadas directamente a la colección del usuario.
+- **Autenticarse en la Plataforma:** La autenticación se realiza mediante un popup que valida las credenciales almacenadas en un archivo JSON, ofreciendo una experiencia fluida y segura.
+
+## Tecnologías Utilizadas
+
+- **JavaScript:** Uso de sintaxis avanzada y manejo de promesas con `fetch` para interactuar con APIs externas y manejar datos locales.
+- **Tailwind CSS:** Para un diseño moderno y responsivo con una paleta de colores pastel.
+- **SweetAlert2:** Para implementar notificaciones interactivas y mensajes de alerta estilizados.
+- **Tippy.js:** Para mejorar la usabilidad con tooltips personalizados y otras interacciones visuales.
+- **Spotify API:** Integración para obtener datos de playlists y canciones recomendadas, y para crear playlists en Spotify directamente desde la aplicación.
+
+## Requisitos del Proyecto
+
+- **Autenticación:** Sistema de login que utiliza un archivo JSON con las credenciales del usuario.
+- **Manejo de Datos:** Creación, almacenamiento y manipulación de playlists utilizando objetos, arrays, local storage y JSON.
+- **Interacción con APIs:** Uso de `fetch` para obtener y manejar datos de la API de Spotify.
+- **Interfaz de Usuario Dinámica:** Uso de DOM, eventos y efectos visuales avanzados para una experiencia de usuario mejorada.
+- **Diseño Responsivo:** Adaptación del sitio para ser visualizado correctamente en diferentes dispositivos y resoluciones.
+
+## Instalación
+
+1. **Clonar el Repositorio:**
+   ```bash
+   git clone https://github.com/camilamartinpereira/preentrega3.git
+   cd preentrega3
+   ```
+
+2. **Instalar Dependencias:**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar la API de Spotify:**
+   - Crear una cuenta en [Spotify for Developers](https://developer.spotify.com/).
+   - Crear una aplicación y obtener el Client ID y Client Secret.
+   - Configurar la URI de redirección en `http://127.0.0.1:5500`.
+   - Colocar las credenciales en el archivo `data/credentials.json`.
+
+4. **Iniciar el Proyecto:**
+   - Abre el archivo `index.html` en un navegador web.
+
+## Uso
+
+- **Crear una Nueva Playlist:** Sigue los pasos guiados desde la página principal para agregar una nueva playlist a tu colección.
+- **Gestionar Playlists:** Accede a la página `playlists.html` para editar, visualizar o eliminar playlists.
+- **Recomendaciones de Playlists:** Selecciona un género y obtén playlists recomendadas directamente desde Spotify.
+
+## Estructura del Proyecto
+
+El proyecto sigue la siguiente estructura de carpetas y archivos:
+
+```
+├── data
 │   └── credentials.json
-├── js/
+├── js
 │   ├── main.js
 │   └── playlists.js
-├── pages/
+├── pages
 │   └── playlists.html
-├── src/
+├── src
 │   ├── input.css
 │   └── output.css
 ├── index.html
 ├── package-lock.json
 ├── package.json
 └── tailwind.config.js
-Instalación
-Clona este repositorio en tu máquina local:
-
-bash
-Copiar código
-git clone https://github.com/tuusuario/bo-escuchate-esto.git
-Navega al directorio del proyecto:
-
-bash
-Copiar código
-cd bo-escuchate-esto
-Instala las dependencias:
-
-bash
-Copiar código
-npm install
-Ejecuta el proyecto en un servidor local:
-
-bash
-Copiar código
-npm start
-Uso
-Abre el proyecto en tu navegador en http://127.0.0.1:5500.
-Inicia sesión utilizando las credenciales predeterminadas (usuario: user, contraseña: 123456).
-Explora las funcionalidades del gestor de playlists, crea nuevas playlists, y obtén recomendaciones directamente desde Spotify.
-Contribuciones
-Las contribuciones son bienvenidas. Si deseas mejorar el proyecto, por favor sigue estos pasos:
-
-Haz un fork del repositorio.
-Crea una nueva rama (git checkout -b feature/nueva-funcionalidad).
-Realiza tus cambios y haz un commit (git commit -m 'Agrega nueva funcionalidad').
-Empuja tus cambios (git push origin feature/nueva-funcionalidad).
-Crea un pull request.
-Créditos
-Este proyecto fue desarrollado por [Tu Nombre] como parte del curso de JavaScript en Coderhouse. Agradecimientos especiales a los instructores y compañeros por su apoyo y feedback.
+```
