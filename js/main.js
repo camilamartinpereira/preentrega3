@@ -6,8 +6,13 @@ document.addEventListener("DOMContentLoaded", function () {
     searchBtn.addEventListener('click', searchPlaylists);
 
     async function checkUserCredentials() {
-        const credentials = await fetch('../data/credentials.json').then(res => res.json());
-        authenticateUser(credentials.users);
+        try {
+            const credentials = await fetch('../data/credentials.json').then(res => res.json());
+            authenticateUser(credentials.users);
+        } catch (error) {
+            console.error("Error loading credentials:", error);
+            Swal.fire('Error al cargar las credenciales.', '', 'error');
+        }
     }
 
     async function authenticateUser(users) {
@@ -34,9 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 checkUserCredentials();
             });
         } else {
-            Swal.fire(`Bienvenido ${user.username}`, '', 'success').then(() => {
-                localStorage.setItem('sessionActive', true);
-            });
+            Swal.fire(`Bienvenido ${user.username}`, '', 'success');
         }
     }
 
@@ -318,9 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (!localStorage.getItem('sessionActive')) {
-        checkUserCredentials();
-    }
+    checkUserCredentials();
 });
 
 function updateProgress(step) {
